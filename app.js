@@ -5,6 +5,16 @@ let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
 let lastLearnDate = localStorage.getItem('lastLearnDate');
 let currentFact = null;
 let currentView = 'daily';
+let dailyFact = null;  // Stocker le fait du jour séparément
+let hasSeenDailyFact = false;  // Si l'utilisateur a déjà vu le fait du jour
+
+// ==================== DATE ACTUELLE ====================
+function updateCalendarDate() {
+    let today = new Date();
+    let day = today.getDate();
+    document.getElementById('calendarDate').innerHTML = day;
+}
+updateCalendarDate();
 
 // ==================== FONCTIONS UTILITAIRES ====================
 function showToast(msg) {
@@ -15,9 +25,32 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 2000);
 }
 
+// Popup générique qui se ferme en cliquant n'importe où
+function showPopup(title, content) {
+    // Supprimer l'ancienne popup
+    let oldPopup = document.querySelector('.info-popup, .definition-popup');
+    if (oldPopup) oldPopup.remove();
+    
+    let popup = document.createElement('div');
+    popup.className = 'info-popup';
+    popup.innerHTML = `
+        <h4>${title}</h4>
+        <p>${content}</p>
+        <button>Fermer</button>
+    `;
+    document.body.appendChild(popup);
+    
+    // Fermer en cliquant sur le bouton
+    popup.querySelector('button').onclick = () => popup.remove();
+    
+    // Fermer en cliquant n'importe où sur l'écran
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) popup.remove();
+    });
+}
+
 function showDefinition(word, definition) {
-    // Supprimer l'ancienne popup si elle existe
-    let oldPopup = document.querySelector('.definition-popup');
+    let oldPopup = document.querySelector('.definition-popup, .info-popup');
     if (oldPopup) oldPopup.remove();
     
     let popup = document.createElement('div');
@@ -25,14 +58,16 @@ function showDefinition(word, definition) {
     popup.innerHTML = `
         <h4>📖 ${word}</h4>
         <p>${definition}</p>
-        <button onclick="this.parentElement.remove()">Fermer</button>
+        <button>Fermer</button>
     `;
     document.body.appendChild(popup);
     
-    // Fermer automatiquement après 5 secondes
-    setTimeout(() => {
-        if (popup.parentElement) popup.remove();
-    }, 5000);
+    popup.querySelector('button').onclick = () => popup.remove();
+    
+    // Fermer en cliquant n'importe où sur l'écran
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) popup.remove();
+    });
 }
 
 // ==================== GESTION DU STREAK ====================
@@ -58,33 +93,30 @@ function getDailyFact() {
     let startOfYear = new Date(today.getFullYear(), 0, 1);
     let dayOfYear = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
     
-    // Chercher le fait correspondant au jour de l'année
-    let dailyFact = FACTS.find(f => f.dayOfYear === dayOfYear);
-    
-    // Si pas trouvé (jours > 30 dans notre base), prendre un bonus aléatoire
-    if (!dailyFact) {
+    let dailyFactData = FACTS.find(f => f.dayOfYear === dayOfYear);
+    if (!dailyFactData) {
         let bonusFacts = FACTS.filter(f => f.dayOfYear === null);
-        dailyFact = bonusFacts[Math.floor(Math.random() * bonusFacts.length)];
+        dailyFactData = bonusFacts[Math.floor(Math.random() * bonusFacts.length)];
     }
     
-    return dailyFact;
+    return dailyFactData;
 }
 
 // ==================== PROCHAIN FAIT NON VU ====================
-function getNextUnlearnedFact() {
-    // Exclure les faits déjà appris ET déjà vus (swipe gauche)
-    let availableFacts = FACTS.filter(f => 
-        !learnedFacts.includes(f.id) && !seenFacts.includes(f.id)
-    );
+function getNextUnlearnedFact(excludeDaily = true) {
+    let excludeIds = [...learnedFacts, ...seenFacts];
+    if (excludeDaily && dailyFact) {
+        excludeIds.push(dailyFact.id);
+    }
+    
+    let availableFacts = FACTS.filter(f => !excludeIds.includes(f.id));
     
     if (availableFacts.length === 0) {
-        // Si tout a été vu, on recommence mais sans les appris
         let resetFacts = FACTS.filter(f => !learnedFacts.includes(f.id));
         if (resetFacts.length === 0) {
             showToast('🏆 Félicitations ! Tu as tout appris !');
             return FACTS[Math.floor(Math.random() * FACTS.length)];
         }
-        // Réinitialiser les vus
         seenFacts = [];
         localStorage.setItem('seenFacts', JSON.stringify(seenFacts));
         return resetFacts[Math.floor(Math.random() * resetFacts.length)];
@@ -105,7 +137,7 @@ function markAsLearned(factId) {
     return false;
 }
 
-// ==================== MARQUER COMME VU (swipe gauche) ====================
+// ==================== MARQUER COMME VU ====================
 function markAsSeen(factId) {
     if (!seenFacts.includes(factId) && !learnedFacts.includes(factId)) {
         seenFacts.push(factId);
@@ -150,10 +182,38 @@ function loadFact(fact, isDaily = false) {
     let textWithDefinitions = renderTextWithDefinitions(fact.text, fact.hardWords);
     document.getElementById('text').innerHTML = textWithDefinitions;
     
-    // Stocker le moreInfo pour le bouton "En savoir plus"
     document.getElementById('infoBtn').dataset.moreInfo = fact.moreInfo || fact.text;
     
     attachWordClickHandlers();
+}
+
+// ==================== CHARGER LE FAIT DU JOUR ====================
+function loadDailyFact() {
+    dailyFact = getDailyFact();
+    loadFact(dailyFact, true);
+    
+    // Mettre à jour le rappel
+    let reminder = document.getElementById('dailyReminder');
+    let reminderTitle = document.getElementById('reminderTitle');
+    reminderTitle.innerHTML = dailyFact.title;
+    
+    // Vérifier si l'utilisateur a déjà vu le fait du jour aujourd'hui
+    let today = new Date().toDateString();
+    let dailySeen = localStorage.getItem('dailySeen_' + today);
+    if (dailySeen === 'true') {
+        hasSeenDailyFact = true;
+        reminder.style.display = 'flex';
+    } else {
+        hasSeenDailyFact = false;
+        reminder.style.display = 'none';
+    }
+}
+
+// ==================== RAPPEL DU FAIT DU JOUR ====================
+function showDailyReminder() {
+    if (dailyFact) {
+        showPopup(`📅 Fait du ${new Date().getDate()}/${new Date().getMonth()+1}`, dailyFact.moreInfo || dailyFact.text);
+    }
 }
 
 // ==================== SWIPE ====================
@@ -161,10 +221,19 @@ function nextFact(direction) {
     let next;
     if (direction === 'right') {
         markAsLearned(currentFact.id);
-        next = getNextUnlearnedFact();
+        
+        // Si c'était le fait du jour, le sauvegarder comme vu
+        if (currentFact.id === dailyFact?.id && !hasSeenDailyFact) {
+            let today = new Date().toDateString();
+            localStorage.setItem('dailySeen_' + today, 'true');
+            hasSeenDailyFact = true;
+            document.getElementById('dailyReminder').style.display = 'flex';
+        }
+        
+        next = getNextUnlearnedFact(true);
     } else {
         markAsSeen(currentFact.id);
-        next = getNextUnlearnedFact();
+        next = getNextUnlearnedFact(true);
     }
     
     if (next) {
@@ -214,7 +283,7 @@ function showHistory() {
 function showFactDetail(factId) {
     let fact = FACTS.find(f => f.id === factId);
     if (fact) {
-        showToast(`${fact.title}\n\n${fact.moreInfo || fact.text}`);
+        showPopup(fact.title, fact.moreInfo || fact.text);
     }
 }
 
@@ -224,7 +293,8 @@ function closeHistory() {
 
 function showStats() {
     let uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
-    let progress = Math.round((learnedFacts.length / FACTS.filter(f => f.dayOfYear !== null || !learnedFacts.includes(f.id)).length) * 100);
+    let totalAvailable = FACTS.filter(f => f.dayOfYear !== null).length + FACTS.filter(f => f.dayOfYear === null).length;
+    let progress = Math.round((learnedFacts.length / totalAvailable) * 100);
     
     document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
@@ -254,11 +324,16 @@ function closeStats() {
     document.getElementById('statsView').classList.remove('open');
 }
 
+// ==================== BOUTON DAILY ====================
 function showDaily() {
     currentView = 'daily';
     updateActiveMenu();
-    let dailyFact = getDailyFact();
-    loadFact(dailyFact, true);
+    // Revenir au fait du jour
+    if (dailyFact) {
+        loadFact(dailyFact, true);
+    } else {
+        loadDailyFact();
+    }
 }
 
 function updateActiveMenu() {
@@ -272,9 +347,12 @@ function updateActiveMenu() {
 document.getElementById('infoBtn').addEventListener('click', () => {
     if (currentFact) {
         let moreInfo = currentFact.moreInfo || currentFact.text;
-        showToast(`${currentFact.title}\n\n${moreInfo}`);
+        showPopup(currentFact.title, moreInfo);
     }
 });
+
+// ==================== RAPPEL CLIC ====================
+document.getElementById('dailyReminder').addEventListener('click', showDailyReminder);
 
 // ==================== MENU ====================
 document.querySelectorAll('.menu-item').forEach(btn => {
@@ -289,8 +367,8 @@ document.querySelectorAll('.menu-item').forEach(btn => {
 // ==================== INITIALISATION ====================
 function init() {
     updateStreak();
-    let dailyFact = getDailyFact();
-    loadFact(dailyFact, true);
+    updateCalendarDate();
+    loadDailyFact();
 }
 
 // Rendre globales les fonctions nécessaires

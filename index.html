@@ -16,7 +16,19 @@
 <div class="app-container">
     <div class="status-bar">
         <div class="streak-badge" id="streakDisplay">0</div>
-        <div class="daily-badge" id="dailyFactIndicator">📅 Fait du jour</div>
+        <div class="daily-badge" id="dailyBadge">
+            <span class="calendar-icon">📅</span>
+            <span class="calendar-date" id="calendarDate">10</span>
+        </div>
+    </div>
+
+    <!-- Mini rappel du fait du jour (visible après l'avoir vu) -->
+    <div class="daily-reminder" id="dailyReminder" style="display: none;">
+        <div class="reminder-content">
+            <span class="reminder-icon">📅</span>
+            <span class="reminder-title" id="reminderTitle">Fait du jour</span>
+            <span class="reminder-arrow">›</span>
+        </div>
     </div>
 
     <div class="swipe-container" id="swipeContainer">
