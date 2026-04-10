@@ -612,3 +612,22 @@ body {
 .daily-badge span {
     font-weight: 600;
 }
+
+/* Correction pour l'affichage en mode standalone (écran d'accueil) */
+@media (display-mode: standalone) {
+    .status-bar {
+        padding-top: 0px !important;
+    }
+    
+    .bottom-menu {
+        padding-bottom: 20px !important;
+    }
+    
+    .swipe-indicator {
+        bottom: 90px !important;
+    }
+    
+    .daily-reminder {
+        top: 50px !important;
+    }
+}
