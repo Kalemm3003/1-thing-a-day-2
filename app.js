@@ -5,8 +5,8 @@ let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
 let lastLearnDate = localStorage.getItem('lastLearnDate');
 let currentFact = null;
 let currentView = 'daily';
-let dailyFact = null;  // Stocker le fait du jour séparément
-let hasSeenDailyFact = false;  // Si l'utilisateur a déjà vu le fait du jour
+let dailyFact = null;
+let hasSeenDailyFact = false;
 
 // ==================== DATE ACTUELLE ====================
 function updateCalendarDate() {
@@ -25,9 +25,7 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 2000);
 }
 
-// Popup générique qui se ferme en cliquant n'importe où
 function showPopup(title, content) {
-    // Supprimer l'ancienne popup
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
     
@@ -40,10 +38,7 @@ function showPopup(title, content) {
     `;
     document.body.appendChild(popup);
     
-    // Fermer en cliquant sur le bouton
     popup.querySelector('button').onclick = () => popup.remove();
-    
-    // Fermer en cliquant n'importe où sur l'écran
     popup.addEventListener('click', (e) => {
         if (e.target === popup) popup.remove();
     });
@@ -63,8 +58,6 @@ function showDefinition(word, definition) {
     document.body.appendChild(popup);
     
     popup.querySelector('button').onclick = () => popup.remove();
-    
-    // Fermer en cliquant n'importe où sur l'écran
     popup.addEventListener('click', (e) => {
         if (e.target === popup) popup.remove();
     });
@@ -98,7 +91,6 @@ function getDailyFact() {
         let bonusFacts = FACTS.filter(f => f.dayOfYear === null);
         dailyFactData = bonusFacts[Math.floor(Math.random() * bonusFacts.length)];
     }
-    
     return dailyFactData;
 }
 
@@ -121,7 +113,6 @@ function getNextUnlearnedFact(excludeDaily = true) {
         localStorage.setItem('seenFacts', JSON.stringify(seenFacts));
         return resetFacts[Math.floor(Math.random() * resetFacts.length)];
     }
-    
     return availableFacts[Math.floor(Math.random() * availableFacts.length)];
 }
 
@@ -145,10 +136,9 @@ function markAsSeen(factId) {
     }
 }
 
-// ==================== AFFICHAGE DU TEXTE AVEC MOTS CLIQUABLES ====================
+// ==================== AFFICHAGE DU TEXTE ====================
 function renderTextWithDefinitions(text, hardWords) {
     if (!hardWords || hardWords.length === 0) return text;
-    
     let result = text;
     for (let item of hardWords) {
         let regex = new RegExp(`\\b(${item.word})\\b`, 'gi');
@@ -175,15 +165,11 @@ function wordClickHandler(e) {
 function loadFact(fact, isDaily = false) {
     if (!fact) return;
     currentFact = fact;
-    
     document.getElementById('category').innerHTML = fact.category.toUpperCase();
     document.getElementById('title').innerHTML = fact.title;
-    
     let textWithDefinitions = renderTextWithDefinitions(fact.text, fact.hardWords);
     document.getElementById('text').innerHTML = textWithDefinitions;
-    
     document.getElementById('infoBtn').dataset.moreInfo = fact.moreInfo || fact.text;
-    
     attachWordClickHandlers();
 }
 
@@ -192,20 +178,17 @@ function loadDailyFact() {
     dailyFact = getDailyFact();
     loadFact(dailyFact, true);
     
-    // Mettre à jour le rappel
-    let reminder = document.getElementById('dailyReminder');
     let reminderTitle = document.getElementById('reminderTitle');
     reminderTitle.innerHTML = dailyFact.title;
     
-    // Vérifier si l'utilisateur a déjà vu le fait du jour aujourd'hui
     let today = new Date().toDateString();
     let dailySeen = localStorage.getItem('dailySeen_' + today);
     if (dailySeen === 'true') {
         hasSeenDailyFact = true;
-        reminder.style.display = 'flex';
+        document.getElementById('dailyReminder').style.display = 'flex';
     } else {
         hasSeenDailyFact = false;
-        reminder.style.display = 'none';
+        document.getElementById('dailyReminder').style.display = 'none';
     }
 }
 
@@ -221,15 +204,12 @@ function nextFact(direction) {
     let next;
     if (direction === 'right') {
         markAsLearned(currentFact.id);
-        
-        // Si c'était le fait du jour, le sauvegarder comme vu
         if (currentFact.id === dailyFact?.id && !hasSeenDailyFact) {
             let today = new Date().toDateString();
             localStorage.setItem('dailySeen_' + today, 'true');
             hasSeenDailyFact = true;
             document.getElementById('dailyReminder').style.display = 'flex';
         }
-        
         next = getNextUnlearnedFact(true);
     } else {
         markAsSeen(currentFact.id);
@@ -246,7 +226,7 @@ function nextFact(direction) {
     }
 }
 
-// ==================== GESTION DES SWIPES TACTILES ====================
+// ==================== GESTION DES SWIPES ====================
 let touchStartX = 0;
 let swipeContainer = document.getElementById('swipeContainer');
 
@@ -265,7 +245,6 @@ swipeContainer.addEventListener('touchend', (e) => {
 function showHistory() {
     let historyList = document.getElementById('historyList');
     let learnedFactsList = FACTS.filter(f => learnedFacts.includes(f.id));
-    
     if (learnedFactsList.length === 0) {
         historyList.innerHTML = '<div class="empty-state">📭 Aucun fait appris<br>Swipe à droite pour apprendre !</div>';
     } else {
@@ -293,29 +272,16 @@ function closeHistory() {
 
 function showStats() {
     let uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
-    let totalAvailable = FACTS.filter(f => f.dayOfYear !== null).length + FACTS.filter(f => f.dayOfYear === null).length;
+    let totalAvailable = FACTS.length;
     let progress = Math.round((learnedFacts.length / totalAvailable) * 100);
-    
     document.getElementById('statsContainer').innerHTML = `
-        <div class="stats-card">
-            <div class="stats-number">${learnedFacts.length}</div>
-            <div>faits appris</div>
-            <div style="margin-top:10px;background:#1e293b;border-radius:10px;height:8px;">
-                <div style="width:${progress}%;background:#60a5fa;height:100%;border-radius:10px;"></div>
-            </div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${currentStreak}</div>
-            <div>jours consécutifs 🔥</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${uniqueCategories.size}</div>
-            <div>catégories explorées</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${FACTS.length}</div>
-            <div>faits disponibles</div>
-        </div>
+        <div class="stats-card"><div class="stats-number">${learnedFacts.length}</div><div>faits appris</div>
+        <div style="margin-top:10px;background:#1e293b;border-radius:10px;height:8px;">
+            <div style="width:${progress}%;background:#60a5fa;height:100%;border-radius:10px;"></div>
+        </div></div>
+        <div class="stats-card"><div class="stats-number">${currentStreak}</div><div>jours consécutifs 🔥</div></div>
+        <div class="stats-card"><div class="stats-number">${uniqueCategories.size}</div><div>catégories explorées</div></div>
+        <div class="stats-card"><div class="stats-number">${FACTS.length}</div><div>faits disponibles</div></div>
     `;
     document.getElementById('statsView').classList.add('open');
 }
@@ -324,11 +290,9 @@ function closeStats() {
     document.getElementById('statsView').classList.remove('open');
 }
 
-// ==================== BOUTON DAILY ====================
 function showDaily() {
     currentView = 'daily';
     updateActiveMenu();
-    // Revenir au fait du jour
     if (dailyFact) {
         loadFact(dailyFact, true);
     } else {
@@ -337,24 +301,19 @@ function showDaily() {
 }
 
 function updateActiveMenu() {
-    document.querySelectorAll('.menu-item').forEach(btn => {
-        btn.classList.remove('active');
-    });
+    document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`[data-view="${currentView}"]`).classList.add('active');
 }
 
-// ==================== BOUTON INFO ====================
+// ==================== ÉVÉNEMENTS ====================
 document.getElementById('infoBtn').addEventListener('click', () => {
     if (currentFact) {
-        let moreInfo = currentFact.moreInfo || currentFact.text;
-        showPopup(currentFact.title, moreInfo);
+        showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
     }
 });
 
-// ==================== RAPPEL CLIC ====================
 document.getElementById('dailyReminder').addEventListener('click', showDailyReminder);
 
-// ==================== MENU ====================
 document.querySelectorAll('.menu-item').forEach(btn => {
     btn.addEventListener('click', () => {
         let view = btn.dataset.view;
@@ -371,7 +330,6 @@ function init() {
     loadDailyFact();
 }
 
-// Rendre globales les fonctions nécessaires
 window.closeHistory = closeHistory;
 window.closeStats = closeStats;
 window.showFactDetail = showFactDetail;

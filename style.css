@@ -534,3 +534,81 @@ body {
     cursor: pointer;
     width: 100%;
 }
+
+/* Daily reminder (rappel du fait du jour) - EN HAUT À GAUCHE */
+.daily-reminder {
+    position: absolute;
+    top: 70px;
+    left: 16px;
+    background: rgba(59, 130, 246, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 8px 16px;
+    border: 0.5px solid rgba(96, 165, 250, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 15;
+    max-width: 70%;
+}
+
+.daily-reminder:active {
+    background: rgba(59, 130, 246, 0.4);
+    transform: scale(0.97);
+}
+
+.reminder-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reminder-icon {
+    font-size: 16px;
+}
+
+.reminder-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #60a5fa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reminder-arrow {
+    font-size: 16px;
+    color: #60a5fa;
+    font-weight: bold;
+}
+
+/* Status bar avec calendrier */
+.status-bar {
+    padding-top: env(safe-area-inset-top, 20px);
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.daily-badge {
+    background: rgba(59, 130, 246, 0.3);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.daily-badge span {
+    font-weight: 600;
+}
