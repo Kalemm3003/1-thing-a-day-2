@@ -1,6 +1,6 @@
 {
-  "name": "1 Thing a Day 2",
-  "short_name": "1ThingADay2",
+  "name": "1 Thing a Day",
+  "short_name": "1ThingADay",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
