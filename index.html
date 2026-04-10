@@ -7,11 +7,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="1 Thing a Day">
     <meta name="theme-color" content="#0f172a">
-    <title>1 Thing a Day - Daily Learn</title>
-
+    <title>1 Thing a Day - 1 Fait par Jour</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
-
     <style>
         * {
             margin: 0;
@@ -31,7 +29,6 @@
             color: #f1f5f9;
         }
 
-        /* Container principal */
         .app-container {
             position: relative;
             width: 100%;
@@ -42,11 +39,11 @@
             flex-direction: column;
         }
 
-        /* Header style iPhone */
         .status-bar {
             padding-top: env(safe-area-inset-top, 20px);
             padding-left: 24px;
             padding-right: 24px;
+            padding-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -79,9 +76,16 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        /* Zone swipe principale */
+        .daily-badge::before {
+            content: "📅";
+            font-size: 12px;
+        }
+
         .swipe-container {
             flex: 1;
             position: relative;
@@ -96,7 +100,6 @@
             cursor: grabbing;
         }
 
-        /* Carte principale */
         .card {
             position: absolute;
             width: calc(100% - 32px);
@@ -111,7 +114,6 @@
             will-change: transform;
         }
 
-        /* Animation swipe */
         .card.swiping-left {
             transform: translateX(-120%) rotate(-8deg);
             opacity: 0;
@@ -122,7 +124,6 @@
             opacity: 0;
         }
 
-        /* Catégorie */
         .category {
             display: inline-block;
             padding: 6px 14px;
@@ -136,7 +137,6 @@
             color: #60a5fa;
         }
 
-        /* Titre */
         .card h1 {
             font-size: 32px;
             font-weight: 700;
@@ -145,7 +145,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* Texte */
         .card p {
             font-size: 18px;
             line-height: 1.5;
@@ -153,7 +152,6 @@
             margin-bottom: 28px;
         }
 
-        /* Bouton info */
         .info-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -173,10 +171,9 @@
             transform: scale(0.98);
         }
 
-        /* Indicateur swipe */
         .swipe-indicator {
             position: absolute;
-            bottom: 30px;
+            bottom: 80px;
             left: 0;
             right: 0;
             text-align: center;
@@ -190,6 +187,7 @@
             backdrop-filter: blur(10px);
             margin: 0 20px;
             border-radius: 40px;
+            z-index: 10;
         }
 
         .swipe-indicator span {
@@ -198,7 +196,6 @@
             gap: 6px;
         }
 
-        /* Menu bas */
         .bottom-menu {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
@@ -207,6 +204,7 @@
             display: flex;
             justify-content: space-around;
             border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+            z-index: 20;
         }
 
         .menu-item {
@@ -234,9 +232,8 @@
             font-size: 22px;
         }
 
-        /* Vue historique */
         .history-view, .stats-view {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -265,6 +262,13 @@
             padding: 16px;
             margin-bottom: 12px;
             border-left: 3px solid #60a5fa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:active {
+            transform: scale(0.98);
+            background: rgba(30, 41, 59, 0.8);
         }
 
         .history-item h3 {
@@ -275,10 +279,16 @@
         .history-item p {
             font-size: 14px;
             color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .history-item small {
+            font-size: 11px;
+            color: #60a5fa;
         }
 
         .close-btn {
-            position: absolute;
+            position: fixed;
             top: 60px;
             right: 20px;
             background: rgba(255, 255, 255, 0.1);
@@ -288,6 +298,8 @@
             padding: 8px 16px;
             border-radius: 30px;
             cursor: pointer;
+            z-index: 201;
+            backdrop-filter: blur(10px);
         }
 
         .stats-card {
@@ -304,9 +316,35 @@
             color: #60a5fa;
         }
 
-        /* Cache scroll */
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 40px;
+        }
+
         ::-webkit-scrollbar {
             display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 300;
+            animation: fadeOut 2s ease forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
     </style>
 </head>
@@ -314,7 +352,7 @@
 <div class="app-container">
     <div class="status-bar">
         <div class="streak-badge" id="streakDisplay">0</div>
-        <div class="daily-badge" id="dailyFactIndicator">📅 Fait du jour</div>
+        <div class="daily-badge" id="dailyFactIndicator">Fait du jour</div>
     </div>
 
     <div class="swipe-container" id="swipeContainer">
@@ -328,11 +366,11 @@
 
     <div class="swipe-indicator">
         <span>⬅️ Ignorer</span>
-        <span>➡️ J'ai appris</span>
+        <span>➡️ J'apprends</span>
     </div>
 
     <div class="bottom-menu">
-        <button class="menu-item" data-view="daily">
+        <button class="menu-item active" data-view="daily">
             <span>📚</span>
             <span>Daily</span>
         </button>
@@ -356,59 +394,44 @@
 <div class="stats-view" id="statsView">
     <button class="close-btn" onclick="closeStats()">✕</button>
     <h2>📊 Mes statistiques</h2>
-    <div class="stats-card">
-        <div class="stats-number" id="statTotalLearned">0</div>
-        <div>faits appris</div>
-    </div>
-    <div class="stats-card">
-        <div class="stats-number" id="statStreak">0</div>
-        <div>jours consécutifs 🔥</div>
-    </div>
-    <div class="stats-card">
-        <div class="stats-number" id="statCategories">0</div>
-        <div>catégories explorées</div>
-    </div>
+    <div id="statsContainer"></div>
 </div>
 
 <script>
-    // ==================== DONNÉES ====================
     const FACTS = [
-        { id: 1, title: "Origine du mot 'Quiz'", text: "Le mot 'quiz' vient d'un pari à Dublin au 18e siècle. Un propriétaire de théâtre aurait parié qu'il pouvait inventer un nouveau mot en 24 heures. Il fit écrire 'QUIZ' sur les murs de la ville, et tout le monde se demanda ce que cela signifiait.", category: "langue", difficulty: 1 },
-        { id: 2, title: "Les bananes sont radioactives", text: "Les bananes sont naturellement radioactives à cause de leur teneur élevée en potassium-40. Mais ne vous inquiétez pas, il faudrait manger des millions de bananes pour ressentir des effets néfastes.", category: "science", difficulty: 1 },
-        { id: 3, title: "L'Octopus de Paul", text: "Paul l'Octopus est devenu célèbre en 2010 pour avoir prédit correctement 12 matchs de la Coupe du Monde sur 14, dont la finale. Il choisissait entre deux boîtes avec des drapeaux.", category: "histoire", difficulty: 2 },
-        { id: 4, title: "Pourquoi les flamants sont roses", text: "Les flamants roses doivent leur couleur aux algues et aux crustacés qu'ils mangent, riches en bêta-carotène. En captivité, ils peuvent perdre leur couleur si leur alimentation ne contient pas assez de ces pigments.", category: "science", difficulty: 1 },
-        { id: 5, title: "Le premier programmeur était une femme", text: "Ada Lovelace, mathématicienne anglaise du 19e siècle, est considérée comme la première programmeuse de l'histoire. Elle a écrit le premier algorithme destiné à être exécuté par une machine.", category: "histoire", difficulty: 2 },
-        { id: 6, title: "Le jour le plus long de l'année", text: "Le solstice d'été (21 juin) est le jour le plus long de l'année dans l'hémisphère nord, avec plus de 16 heures de lumière dans certaines régions.", category: "science", difficulty: 1 },
-        { id: 7, title: "Pourquoi bâille-t-on ?", text: "Le bâillement n'est pas seulement un signe de fatigue. Il aide à refroidir le cerveau et à augmenter l'oxygénation. Et oui, le bâillement est contagieux même chez les chiens!", category: "science", difficulty: 2 },
-        { id: 8, title: "Le volcan le plus haut du système solaire", text: "Olympus Mons sur Mars est un volcan de 22 km de haut, soit presque trois fois la hauteur de l'Everest. Sa base est large comme la France!", category: "science", difficulty: 2 },
-        { id: 9, title: "Napoléon et les lapins", text: "Napoléon a un jour été attaqué par une horde de lapins lors d'une chasse. Les lapins apprivoisés se sont rués vers lui et son groupe, les prenant pour des nourrisseurs.", category: "histoire", difficulty: 3 },
-        { id: 10, title: "Le mot le plus long en français", text: "Anticonstitutionnellement (25 lettres) est souvent cité, mais 'hexakosioihexekontahexaphobie' (peur du nombre 666) est encore plus long.", category: "langue", difficulty: 3 },
-        { id: 11, title: "Les abeilles dansent", text: "Les abeilles communiquent la direction et la distance des sources de nourriture grâce à une 'danse frétillante'. Une vraie chorégraphie géolocalisée!", category: "science", difficulty: 2 },
-        { id: 12, title: "La Tour Eiffel change de taille", text: "La Tour Eiffel peut mesurer jusqu'à 15 cm de plus en été à cause de la dilatation thermique du fer.", category: "histoire", difficulty: 1 },
-        { id: 13, title: "Oxford plus vieux que les Aztèques", text: "L'Université d'Oxford enseignait déjà depuis 250 ans quand l'empire Aztèque a été fondé (1428).", category: "histoire", difficulty: 2 },
-        { id: 14, title: "Le fromage le plus cher du monde", text: "Le pule, fabriqué à partir de lait d'ânesse en Serbie, peut coûter jusqu'à 1000€ le kilo. Il faut 25 litres de lait pour 1 kilo de fromage!", category: "langue", difficulty: 2 },
-        { id: 15, title: "Les koalas ont des empreintes digitales", text: "Les koalas ont des empreintes digitales presque identiques à celles des humains, même les experts peuvent les confondre au microscope.", category: "science", difficulty: 2 },
-        { id: 16, title: "Pourquoi 60 minutes ?", text: "Les Babyloniens comptaient en base 60 il y a 4000 ans. C'est pour cela qu'une heure fait 60 minutes et un cercle 360 degrés.", category: "histoire", difficulty: 2 },
-        { id: 17, title: "L'odeur de la pluie", text: "La pétrichor est l'odeur caractéristique après la pluie. Elle vient d'huiles produites par certaines plantes et de bactéries dans le sol.", category: "science", difficulty: 1 },
-        { id: 18, title: "Cléopâtre vivait plus près de l'invention d'iPhone", text: "Cléopâtre a vécu plus près de l'invention de l'iPhone (2007) que de la construction des pyramides de Gizeh (2560 avant JC).", category: "histoire", difficulty: 2 },
-        { id: 19, title: "Le cri du canard n'écho pas", text: "Le cri du canard n'écho pas vraiment. Personne ne sait pourquoi avec certitude, mais la théorie veut que le son soit trop doux ou mal dirigé.", category: "science", difficulty: 2 },
-        { id: 20, title: "Octopus à 3 cœurs", text: "La pieuvre a trois cœurs : deux branchiaux pour pomper le sang vers les branchies, et un système pour le reste du corps.", category: "science", difficulty: 2 }
+        { id: 1, title: "Origine du mot 'Quiz'", text: "Le mot 'quiz' vient d'un pari à Dublin au 18e siècle.", category: "langue", difficulty: 1 },
+        { id: 2, title: "Les bananes sont radioactives", text: "Les bananes sont naturellement radioactives à cause de leur teneur élevée en potassium-40.", category: "science", difficulty: 1 },
+        { id: 3, title: "Paul l'Octopus", text: "Paul l'Octopus est devenu célèbre en 2010 pour avoir prédit 12 matchs de la Coupe du Monde sur 14.", category: "histoire", difficulty: 2 },
+        { id: 4, title: "Pourquoi les flamants sont roses", text: "Les flamants roses doivent leur couleur aux algues et crustacés qu'ils mangent, riches en bêta-carotène.", category: "science", difficulty: 1 },
+        { id: 5, title: "Le premier programmeur était une femme", text: "Ada Lovelace est considérée comme la première programmeuse de l'histoire.", category: "histoire", difficulty: 2 },
+        { id: 6, title: "Le jour le plus long", text: "Le solstice d'été est le jour le plus long de l'année dans l'hémisphère nord.", category: "science", difficulty: 1 },
+        { id: 7, title: "Pourquoi bâille-t-on ?", text: "Le bâillement aide à refroidir le cerveau et à augmenter l'oxygénation.", category: "science", difficulty: 2 },
+        { id: 8, title: "Olympus Mons", text: "Olympus Mons sur Mars est un volcan de 22 km de haut, presque trois fois l'Everest.", category: "science", difficulty: 2 },
+        { id: 9, title: "Napoléon et les lapins", text: "Napoléon a un jour été attaqué par une horde de lapins lors d'une chasse.", category: "histoire", difficulty: 3 },
+        { id: 10, title: "Le mot le plus long", text: "Anticonstitutionnellement (25 lettres) est souvent cité.", category: "langue", difficulty: 3 }
     ];
 
-    // État de l'application
-    let currentIndex = 0;
     let learnedFacts = JSON.parse(localStorage.getItem('learnedFacts')) || [];
     let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
     let lastLearnDate = localStorage.getItem('lastLearnDate');
     let dailyFactId = parseInt(localStorage.getItem('dailyFactId')) || null;
     let lastDailyDate = localStorage.getItem('lastDailyDate');
+    let currentFact = null;
 
-    // Gestion du streak journalier
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
     function updateStreak() {
-        const today = new Date().toDateString();
+        let today = new Date().toDateString();
         if (lastLearnDate !== today) {
             if (lastLearnDate && new Date(lastLearnDate).getTime() === new Date(today).getTime() - 86400000) {
                 currentStreak++;
+                showToast('🔥 Streak de ' + currentStreak + ' jours !');
             } else if (lastLearnDate !== today) {
                 currentStreak = 1;
             }
@@ -419,12 +442,15 @@
         document.getElementById('streakDisplay').innerHTML = currentStreak;
     }
 
-    // Déterminer le fait du jour
     function getDailyFact() {
-        const today = new Date().toDateString();
+        let today = new Date().toDateString();
         if (lastDailyDate !== today || !dailyFactId) {
-            const randomIndex = Math.floor(Math.random() * FACTS.length);
-            dailyFactId = FACTS[randomIndex].id;
+            let unlearned = FACTS.filter(f => !learnedFacts.some(lf => lf.id === f.id));
+            if (unlearned.length > 0) {
+                dailyFactId = unlearned[Math.floor(Math.random() * unlearned.length)].id;
+            } else {
+                dailyFactId = FACTS[Math.floor(Math.random() * FACTS.length)].id;
+            }
             lastDailyDate = today;
             localStorage.setItem('dailyFactId', dailyFactId);
             localStorage.setItem('lastDailyDate', lastDailyDate);
@@ -432,15 +458,9 @@
         return FACTS.find(f => f.id === dailyFactId) || FACTS[0];
     }
 
-    // Vérifier si un fait est appris
-    function isLearned(factId) {
-        return learnedFacts.some(f => f.id === factId);
-    }
-
-    // Marquer un fait comme appris
     function markAsLearned(factId) {
-        if (!isLearned(factId)) {
-            const fact = FACTS.find(f => f.id === factId);
+        if (!learnedFacts.some(f => f.id === factId)) {
+            let fact = FACTS.find(f => f.id === factId);
             if (fact) {
                 learnedFacts.push({
                     id: fact.id,
@@ -451,86 +471,72 @@
                 });
                 localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
                 updateStreak();
-                updateStats();
-                renderHistory();
+                showToast('✅ Appris : ' + fact.title);
                 return true;
             }
         }
         return false;
     }
 
-    // Obtenir le prochain fait non appris
-    function getNextUnlearnedFact() {
-        const unlearned = FACTS.filter(f => !isLearned(f.id));
+    function getNextFact() {
+        let unlearned = FACTS.filter(f => !learnedFacts.some(lf => lf.id === f.id));
         if (unlearned.length === 0) {
-            // Si tout est appris, on recommence
-            return FACTS[currentIndex % FACTS.length];
+            showToast('🏆 Félicitations ! Tu as tout appris !');
+            return FACTS[Math.floor(Math.random() * FACTS.length)];
         }
         return unlearned[0];
     }
 
-    let currentFact = null;
-
     function loadFact(fact) {
         currentFact = fact;
-        document.getElementById('category').textContent = fact.category.toUpperCase();
-        document.getElementById('title').textContent = fact.title;
-        document.getElementById('text').textContent = fact.text;
+        document.getElementById('category').innerHTML = fact.category.toUpperCase();
+        document.getElementById('title').innerHTML = fact.title;
+        document.getElementById('text').innerHTML = fact.text;
     }
 
-    function nextFact(direction = 'left') {
-        let nextFactObj;
+    function nextFact(direction) {
+        let next;
         if (direction === 'right') {
             markAsLearned(currentFact.id);
-            nextFactObj = getNextUnlearnedFact();
+            next = getNextFact();
         } else {
-            nextFactObj = getNextUnlearnedFact();
+            next = getNextFact();
         }
-        
-        if (nextFactObj) {
-            loadFact(nextFactObj);
-            animateCardTransition(direction);
+        if (next) {
+            loadFact(next);
+            let card = document.getElementById('card');
+            card.classList.add(direction === 'right' ? 'swiping-right' : 'swiping-left');
+            setTimeout(() => {
+                card.classList.remove('swiping-right', 'swiping-left');
+            }, 300);
         }
     }
 
-    function animateCardTransition(direction) {
-        const card = document.getElementById('card');
-        card.classList.add(direction === 'right' ? 'swiping-right' : 'swiping-left');
-        setTimeout(() => {
-            card.classList.remove('swiping-right', 'swiping-left');
-        }, 300);
-    }
-
-    // ==================== SWIPE GESTURES ====================
     let touchStartX = 0;
-    let touchEndX = 0;
-    const minSwipeDistance = 50;
-
-    const swipeContainer = document.getElementById('swipeContainer');
-    
+    let swipeContainer = document.getElementById('swipeContainer');
     swipeContainer.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
     });
-    
     swipeContainer.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        const deltaX = touchEndX - touchStartX;
-        
-        if (Math.abs(deltaX) > minSwipeDistance) {
-            if (deltaX > 0) {
-                // Swipe droite - J'ai appris
-                nextFact('right');
-            } else {
-                // Swipe gauche - Suivant
-                nextFact('left');
-            }
+        let deltaX = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(deltaX) > 50) {
+            nextFact(deltaX > 0 ? 'right' : 'left');
         }
     });
 
-    // ==================== VUES ====================
     function showHistory() {
+        let historyList = document.getElementById('historyList');
+        if (learnedFacts.length === 0) {
+            historyList.innerHTML = '<div class="empty-state">📭 Aucun fait appris<br>Swipe à droite pour apprendre !</div>';
+        } else {
+            historyList.innerHTML = learnedFacts.slice().reverse().map(f => 
+                '<div class="history-item" onclick="alert(\'' + f.title + '\\n\\n' + f.text + '\')">' +
+                '<h3>' + f.title + '</h3>' +
+                '<p>' + f.text.substring(0, 80) + '...</p>' +
+                '<small>📂 ' + f.category + ' • ' + new Date(f.date).toLocaleDateString('fr-FR') + '</small></div>'
+            ).join('');
+        }
         document.getElementById('historyView').classList.add('open');
-        renderHistory();
     }
 
     function closeHistory() {
@@ -538,8 +544,15 @@
     }
 
     function showStats() {
+        let uniqueCats = new Set(learnedFacts.map(f => f.category));
+        let progress = Math.round((learnedFacts.length / FACTS.length) * 100);
+        document.getElementById('statsContainer').innerHTML = 
+            '<div class="stats-card"><div class="stats-number">' + learnedFacts.length + '</div><div>faits appris sur ' + FACTS.length + '</div>' +
+            '<div style="margin-top:10px;background:#1e293b;border-radius:10px;height:8px;"><div style="width:' + progress + '%;background:#60a5fa;height:100%;border-radius:10px;"></div></div>' +
+            '<div style="margin-top:8px;font-size:12px;">' + progress + '% complété</div></div>' +
+            '<div class="stats-card"><div class="stats-number">' + currentStreak + '</div><div>jours consécutifs 🔥</div></div>' +
+            '<div class="stats-card"><div class="stats-number">' + uniqueCats.size + '</div><div>catégories explorées</div></div>';
         document.getElementById('statsView').classList.add('open');
-        updateStats();
     }
 
     function closeStats() {
@@ -547,57 +560,23 @@
     }
 
     function showDaily() {
-        const dailyFact = getDailyFact();
-        loadFact(dailyFact);
+        loadFact(getDailyFact());
     }
 
-    function renderHistory() {
-        const historyList = document.getElementById('historyList');
-        if (learnedFacts.length === 0) {
-            historyList.innerHTML = '<div style="text-align:center;color:#64748b;padding:40px;">Aucun fait appris pour le moment<br>👈 Swipez à droite pour apprendre!</div>';
-            return;
-        }
-        historyList.innerHTML = learnedFacts.slice().reverse().map(fact => `
-            <div class="history-item">
-                <h3>${fact.title}</h3>
-                <p>${fact.text.substring(0, 100)}...</p>
-                <small style="color:#60a5fa;">${fact.category} • ${new Date(fact.date).toLocaleDateString('fr-FR')}</small>
-            </div>
-        `).join('');
-    }
-
-    function updateStats() {
-        const uniqueCategories = new Set(learnedFacts.map(f => f.category));
-        document.getElementById('statTotalLearned').textContent = learnedFacts.length;
-        document.getElementById('statStreak').textContent = currentStreak;
-        document.getElementById('statCategories').textContent = uniqueCategories.size;
-    }
-
-    // Navigation menu
     document.querySelectorAll('.menu-item').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const view = btn.dataset.view;
+        btn.addEventListener('click', () => {
+            let view = btn.dataset.view;
+            if (view === 'daily') showDaily();
             if (view === 'history') showHistory();
-            else if (view === 'stats') showStats();
-            else if (view === 'daily') showDaily();
+            if (view === 'stats') showStats();
         });
     });
+    document.getElementById('infoBtn').onclick = () => alert(currentFact ? currentFact.title + '\n\n' + currentFact.text : 'Charge...');
+    window.closeHistory = closeHistory;
+    window.closeStats = closeStats;
 
-    // Bouton info
-    document.getElementById('infoBtn').addEventListener('click', () => {
-        alert(currentFact ? `${currentFact.title}\n\n${currentFact.text}` : "Swipez pour découvrir des faits!");
-    });
-
-    // Initialisation
-    function init() {
-        updateStreak();
-        const dailyFact = getDailyFact();
-        loadFact(dailyFact);
-        renderHistory();
-        updateStats();
-    }
-
-    init();
+    updateStreak();
+    loadFact(getDailyFact());
 </script>
 </body>
 </html>

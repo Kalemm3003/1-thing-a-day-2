@@ -1,10 +1,11 @@
 {
-  "name": "Quiz Culture",
-  "short_name": "Quiz",
+  "name": "1 Thing a Day 2",
+  "short_name": "1ThingADay2",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
+  "description": "Apprenez 1 fait par jour avec des swipes style TikTok",
   "icons": [
     {
       "src": "icon.png",
