@@ -2,93 +2,53 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Quiz des Poissons 🐟</title>
+  <title>Test Site OK</title>
   <style>
     body {
       font-family: Arial;
       text-align: center;
-      background: linear-gradient(to bottom, #d0f4ff, #ffffff);
-      padding: 30px;
+      background: #e0f7ff;
+      padding: 50px;
     }
 
     h1 {
       color: #0077b6;
     }
 
-    .card {
+    .box {
       background: white;
       padding: 20px;
-      margin: 20px auto;
-      width: 320px;
       border-radius: 15px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-
-    img {
-      width: 100%;
-      border-radius: 10px;
+      width: 300px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
 
     button {
-      margin: 5px;
       padding: 10px;
-      width: 90%;
+      margin-top: 10px;
+      width: 100%;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
       background: #90e0ef;
+      cursor: pointer;
     }
 
     button:hover {
       background: #00b4d8;
       color: white;
     }
-
-    #result {
-      font-size: 20px;
-      margin-top: 20px;
-      color: green;
-    }
   </style>
 </head>
 
 <body>
 
-<h1>🐟 Quiz des Poissons</h1>
-<p>Réponds aux questions !</p>
+<h1>🐟 Test du site</h1>
 
-<div class="card">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Great_barracuda.jpg" alt="barracuda">
-  <p>1. Quel est ce poisson ?</p>
-  <button onclick="wrong()">Thon</button>
-  <button onclick="correct()">Barracuda</button>
-  <button onclick="wrong()">Saumon</button>
+<div class="box">
+  <p>Si tu vois ce message, ton site fonctionne 🎉</p>
+  <button onclick="alert('Ça marche ! 🚀')">Tester</button>
 </div>
-
-<div class="card">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Clown_fish_in_the_anemone.jpg" alt="poisson clown">
-  <p>2. Quel poisson est orange et vit dans les anémones ?</p>
-  <button onclick="wrong()">Requin</button>
-  <button onclick="correct()">Poisson clown</button>
-  <button onclick="wrong()">Carpe</button>
-</div>
-
-<div id="result"></div>
-
-<script>
-let score = 0;
-
-function correct() {
-  score++;
-  document.getElementById("result").innerHTML =
-    "✔️ Bonne réponse ! Score : " + score;
-}
-
-function wrong() {
-  document.getElementById("result").innerHTML =
-    "❌ Mauvaise réponse ! Score : " + score;
-}
-</script>
 
 </body>
 </html>
