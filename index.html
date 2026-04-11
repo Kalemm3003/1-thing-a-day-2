@@ -14,23 +14,16 @@
 <body>
     <div class="app-container">
         <header>
-            <span>📅 1 Thing a Day</span>
-            <span id="streak">🔥 0 appris</span>
-        </header>
-
-        <div class="filter-zone">
-            <div class="theme-bubble">
-                <span id="current-theme-label">Tout</span>
-                <select id="category-select">
-                    <option value="Tout">Tout</option>
-                    <option value="Technologie">Technologie</option>
-                    <option value="Histoire">Histoire</option>
-                    <option value="Science">Science</option>
-                    <option value="Nature">Nature</option>
-                    <option value="Insolite">Insolite</option>
+            <div class="header-top">
+                <span>📅 1 Thing a Day</span>
+                <span id="streak">🔥 0 appris</span>
+            </div>
+            <div class="filter-container">
+                <select id="categoryFilter">
+                    <option value="all">Toutes les catégories</option>
                 </select>
             </div>
-        </div>
+        </header>
 
         <div class="card-container">
             <div id="card" class="card">
