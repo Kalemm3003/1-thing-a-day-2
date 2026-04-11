@@ -7,7 +7,7 @@ let currentView = 'daily';
 
 const card = document.getElementById('card');
 
-// ==================== POPUPS ====================
+// ==================== POPUPS (fermeture au clic n'importe où) ====================
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
@@ -21,9 +21,14 @@ function showPopup(title, content) {
     `;
     document.body.appendChild(popup);
     
+    // Fermer avec le bouton
     popup.querySelector('button').onclick = () => popup.remove();
+    
+    // Fermer en cliquant n'importe où sur l'écran
     popup.addEventListener('click', (e) => {
-        if (e.target === popup) popup.remove();
+        if (e.target === popup || e.target === popup.querySelector('button')) {
+            popup.remove();
+        }
     });
 }
 
@@ -40,9 +45,14 @@ function showDefinition(definition) {
     `;
     document.body.appendChild(popup);
     
+    // Fermer avec le bouton
     popup.querySelector('button').onclick = () => popup.remove();
+    
+    // Fermer en cliquant n'importe où sur l'écran
     popup.addEventListener('click', (e) => {
-        if (e.target === popup) popup.remove();
+        if (e.target === popup || e.target === popup.querySelector('button')) {
+            popup.remove();
+        }
     });
 }
 
@@ -128,7 +138,7 @@ function renderFact(fact) {
     });
     
     card.querySelector('.more-btn').addEventListener('click', () => {
-        showPopup(fact.title, fact.moreInfo || fact.text);
+        showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
     });
     
     card.style.transform = 'translateX(0) rotate(0)';
@@ -160,10 +170,8 @@ function setupGestures() {
         
         if (Math.abs(diff) > 100) {
             if (diff > 0) {
-                // Swipe droite → appris
                 markAsLearned(currentFact.id);
             }
-            // Swipe gauche ou droite → suivant
             nextFact();
         } else {
             card.style.transform = 'translateX(0) rotate(0)';
@@ -200,6 +208,7 @@ function showHistory() {
         ).join('');
     }
     document.getElementById('historyView').classList.add('open');
+    enableSwipeBack();
 }
 
 function showFactDetail(factId) {
@@ -211,6 +220,7 @@ function showFactDetail(factId) {
 
 function closeHistory() {
     document.getElementById('historyView').classList.remove('open');
+    disableSwipeBack();
 }
 
 // ==================== STATS ====================
@@ -233,10 +243,56 @@ function showStats() {
         <div class="stats-card"><div class="stats-number">${FACTS.length}</div><div>faits disponibles</div></div>
     `;
     document.getElementById('statsView').classList.add('open');
+    enableSwipeBack();
 }
 
 function closeStats() {
     document.getElementById('statsView').classList.remove('open');
+    disableSwipeBack();
+}
+
+// ==================== SWIPE POUR REVENIR (gauche → droite) ====================
+let swipeBackStartX = 0;
+let swipeBackArea = null;
+
+function enableSwipeBack() {
+    // Créer la zone de swipe si elle n'existe pas
+    if (!swipeBackArea) {
+        swipeBackArea = document.createElement('div');
+        swipeBackArea.className = 'swipe-back-area';
+        document.body.appendChild(swipeBackArea);
+    }
+    swipeBackArea.classList.add('active');
+    
+    // Ajouter les écouteurs
+    swipeBackArea.addEventListener('touchstart', onSwipeBackStart);
+    swipeBackArea.addEventListener('touchend', onSwipeBackEnd);
+}
+
+function disableSwipeBack() {
+    if (swipeBackArea) {
+        swipeBackArea.classList.remove('active');
+        swipeBackArea.removeEventListener('touchstart', onSwipeBackStart);
+        swipeBackArea.removeEventListener('touchend', onSwipeBackEnd);
+    }
+}
+
+function onSwipeBackStart(e) {
+    swipeBackStartX = e.touches[0].clientX;
+}
+
+function onSwipeBackEnd(e) {
+    const endX = e.changedTouches[0].clientX;
+    const deltaX = endX - swipeBackStartX;
+    
+    // Swipe de gauche à droite (deltaX > 50)
+    if (deltaX > 50) {
+        if (document.getElementById('historyView').classList.contains('open')) {
+            closeHistory();
+        } else if (document.getElementById('statsView').classList.contains('open')) {
+            closeStats();
+        }
+    }
 }
 
 // ==================== DAILY ====================
@@ -274,5 +330,7 @@ function init() {
 window.showFactDetail = showFactDetail;
 window.closeHistory = closeHistory;
 window.closeStats = closeStats;
+window.showDefinition = showDefinition;
+window.showPopup = showPopup;
 
 init();
