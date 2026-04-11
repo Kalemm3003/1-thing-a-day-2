@@ -1,4 +1,4 @@
-import { FACTS, CATEGORIES } from './data.js';
+import { FACTS } from './data.js';
 
 let learnedFacts = JSON.parse(localStorage.getItem('learnedFacts')) || [];
 let currentFact = null;
@@ -11,8 +11,8 @@ const categorySelect = document.getElementById('category-select');
 
 function init() {
     loadFactOfDay();
+    updateStatsUI();
     setupGestures();
-    updateStatsUI(); // Charge le compteur au démarrage
     
     categorySelect.addEventListener('change', (e) => {
         currentTheme = e.target.value;
@@ -22,24 +22,16 @@ function init() {
 }
 
 function updateStatsUI() {
-    const streakEl = document.getElementById('streak');
-    if (streakEl) {
-        streakEl.innerText = `🔥 ${learnedFacts.length} appris`;
-    }
+    document.getElementById('streak').innerText = `🔥 ${learnedFacts.length} appris`;
 }
 
 function loadFactOfDay() {
     const today = new Date();
     const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-    
-    // On cherche d'abord le fait du jour précis
     let fact = FACTS.find(f => f.dayOfYear === dayOfYear);
-    
-    // Si déjà appris ou inexistant, on prend le premier non appris
     if (!fact || learnedFacts.includes(fact.id)) {
         fact = FACTS.find(f => !learnedFacts.includes(f.id));
     }
-
     currentFact = fact || FACTS[0];
     renderFact();
 }
@@ -53,8 +45,8 @@ function renderFact() {
 
     card.innerHTML = `
         <div class="category-badge">${currentFact.category}</div>
-        <h1 style="font-size: 1.8rem; margin-bottom: 15px;">${currentFact.title}</h1>
-        <p style="font-size: 1.1rem; line-height: 1.6;">${text}</p>
+        <h1 style="font-size: 1.6rem; margin-bottom: 15px;">${currentFact.title}</h1>
+        <p style="font-size: 1rem; line-height: 1.5;">${text}</p>
         <button class="more-btn" onclick="window.showMore()">En savoir plus</button>
     `;
     card.style.transform = 'translateX(0) rotate(0)';
@@ -65,49 +57,33 @@ window.showDef = (def) => alert(`Définition : ${def}`);
 window.showMore = () => alert(currentFact.moreInfo);
 
 function setupGestures() {
-    card.addEventListener('touchstart', e => {
-        startX = e.touches[0].clientX;
-        card.style.transition = 'none';
-    }, {passive: true});
-
+    card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; card.style.transition = 'none'; });
     card.addEventListener('touchmove', e => {
         const move = e.touches[0].clientX - startX;
-        card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
-    }, {passive: true});
-
+        card.style.transform = `translateX(${move}px) rotate(${move / 25}deg)`;
+    });
     card.addEventListener('touchend', e => {
         const diff = e.changedTouches[0].clientX - startX;
-        card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        
+        card.style.transition = 'all 0.4s ease';
         if (Math.abs(diff) > 100) {
-            if (diff > 0) learned(currentFact.id);
+            if (diff > 0) {
+                if (!learnedFacts.includes(currentFact.id)) {
+                    learnedFacts.push(currentFact.id);
+                    localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
+                    updateStatsUI();
+                }
+            }
             nextFact();
-        } else {
-            card.style.transform = 'translateX(0) rotate(0)';
-        }
+        } else { card.style.transform = 'translateX(0) rotate(0)'; }
     });
-}
-
-function learned(id) {
-    if (!learnedFacts.includes(id)) {
-        learnedFacts.push(id);
-        localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
-        updateStatsUI();
-    }
 }
 
 function nextFact() {
     card.style.opacity = '0';
     setTimeout(() => {
-        let pool = FACTS;
-        if (currentTheme !== "Tout") {
-            pool = FACTS.filter(f => f.category === currentTheme);
-        }
-
+        let pool = (currentTheme === "Tout") ? FACTS : FACTS.filter(f => f.category === currentTheme);
         let next = pool.find(f => !learnedFacts.includes(f.id) && f.id !== currentFact.id);
-        if (!next) next = pool[Math.floor(Math.random() * pool.length)];
-        
-        currentFact = next || FACTS[0];
+        currentFact = next || pool[Math.floor(Math.random() * pool.length)] || FACTS[0];
         renderFact();
     }, 300);
 }
