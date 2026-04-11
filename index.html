@@ -4,27 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="style.css">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="1 Thing a Day">
+    <meta name="theme-color" content="#0f172a">
+    <title>1 Thing a Day - Apprenez 1 fait par jour</title>
     <link rel="manifest" href="manifest.json">
-    <title>1 Thing a Day</title>
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <span id="streak">🔥 1 Thing a Day</span>
-        </header>
-
-        <div class="card-container">
-            <div id="card" class="card">
-                </div>
+<div class="app-container">
+    <div class="status-bar">
+        <div class="streak-badge" id="streakDisplay">0</div>
+        <div class="daily-badge">
+            📅 <span id="calendarDate">10</span>
         </div>
-
-        <nav class="nav-bar">
-            <div class="nav-item active"><span>📅</span>Daily</div>
-            <div class="nav-item"><span>📖</span>Historique</div>
-            <div class="nav-item"><span>📊</span>Stats</div>
-        </nav>
     </div>
-    <script type="module" src="app.js"></script>
+
+    <div class="daily-reminder" id="dailyReminder" style="display: none;">
+        <div class="reminder-content">
+            <span class="reminder-icon">📅</span>
+            <span class="reminder-title" id="reminderTitle">Fait du jour</span>
+            <span class="reminder-arrow">›</span>
+        </div>
+    </div>
+
+    <div class="swipe-container">
+        <div class="card" id="card">
+            <div class="category" id="category">Science</div>
+            <h1 id="title">Chargement...</h1>
+            <p id="text">Découvrez votre premier fait du jour</p>
+            <button class="info-btn" id="infoBtn">ℹ️ En savoir plus</button>
+        </div>
+    </div>
+
+    <div class="swipe-indicator">
+        <span>⬅️ Ignorer</span>
+        <span>➡️ J'apprends</span>
+    </div>
+
+    <div class="bottom-menu">
+        <button class="menu-item active" data-view="daily">
+            <span>📚</span>
+            <span>Daily</span>
+        </button>
+        <button class="menu-item" data-view="history">
+            <span>📖</span>
+            <span>Historique</span>
+        </button>
+        <button class="menu-item" data-view="stats">
+            <span>📊</span>
+            <span>Stats</span>
+        </button>
+    </div>
+</div>
+
+<div class="history-view" id="historyView">
+    <button class="close-btn" onclick="closeHistory()">✕</button>
+    <h2>📖 Ce que j'ai appris</h2>
+    <div id="historyList"></div>
+</div>
+
+<div class="stats-view" id="statsView">
+    <button class="close-btn" onclick="closeStats()">✕</button>
+    <h2>📊 Mes statistiques</h2>
+    <div id="statsContainer"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
