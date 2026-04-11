@@ -10,8 +10,12 @@
 </head>
 <body>
     <div class="app-container">
-        <header style="display: flex; justify-content: space-between; align-items: center; padding: 20px 25px 0 25px;">
-            <span id="streak">🔥 0 appris</span>
+        <header>
+            <div class="header-top">
+                <span id="streak">🔥 0 appris</span>
+                <span class="app-title">1 Thing a Day</span>
+                <div style="width: 50px;"></div> </div>
+            
             <div class="theme-selector">
                 <div class="theme-bubble">
                     <span id="current-theme-label">Tout</span>
@@ -33,7 +37,7 @@
         </div>
 
         <nav class="nav-bar">
-            <div class="nav-item active"><span>📅</span>Daily</div>
+            <div class="nav-item active" onclick="location.reload()"><span>📅</span>Daily</div>
             <div class="nav-item"><span>📖</span>Historique</div>
             <div class="nav-item"><span>📊</span>Stats</div>
         </nav>
