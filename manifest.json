@@ -2,7 +2,7 @@
   "name": "1 Thing a Day",
   "short_name": "1ThingADay",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "description": "Apprenez 1 fait par jour avec des swipes style TikTok",

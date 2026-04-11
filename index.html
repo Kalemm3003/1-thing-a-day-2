@@ -76,3 +76,10 @@
 <script src="app.js"></script>
 </body>
 </html>
+<script>
+    // Masquer la barre de statut en mode standalone
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        // Demander le plein écran
+        document.documentElement.requestFullscreen();
+    }
+</script>

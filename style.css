@@ -513,3 +513,23 @@ body {
         margin: 10px 0;
     }
 }
+
+/* Mode plein écran - plus de barres système */
+@media (display-mode: fullscreen) {
+    .status-bar {
+        padding-top: 12px !important;
+        background: transparent !important;
+    }
+    
+    .daily-reminder {
+        top: 55px !important;
+    }
+    
+    .swipe-indicator {
+        bottom: 85px !important;
+    }
+    
+    .bottom-menu {
+        padding-bottom: 20px !important;
+    }
+}
