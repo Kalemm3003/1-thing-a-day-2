@@ -26,12 +26,12 @@ body {
     flex-direction: column;
 }
 
-/* Status bar - on laisse l'iPhone gérer */
+/* Status bar - version uniforme grise/transparente */
 .status-bar {
     padding-top: max(12px, env(safe-area-inset-top, 20px));
     padding-left: 20px;
     padding-right: 20px;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -40,6 +40,34 @@ body {
     background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(10px);
     z-index: 100;
+    /* Forcer la même couleur en mode Safari */
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Supprimer le fond blanc par défaut sur iOS */
+.status-bar::before {
+    display: none;
+}
+
+/* Forcer la barre d'état à être transparente sur Safari */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .status-bar {
+        background: rgba(15, 23, 42, 0.85);
+    }
+}
+
+/* Mode Safari spécifique */
+@media not all and (display-mode: standalone) {
+    .status-bar {
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+    }
+    
+    /* Forcer le body à ne pas avoir de fond blanc */
+    body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
 }
 
 .streak-badge {
@@ -73,7 +101,7 @@ body {
     font-weight: 600;
 }
 
-/* Daily reminder - sous la barre de statut */
+/* Daily reminder */
 .daily-reminder {
     position: absolute;
     top: calc(env(safe-area-inset-top, 20px) + 50px);
