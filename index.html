@@ -4,33 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="1 Thing a Day">
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
     <title>1 Thing a Day</title>
 </head>
 <body>
     <div class="app-container">
         <header>
-            <div class="top-bar">
-                <span id="streak">🔥 0 appris</span>
-                <span class="logo">1 Thing a Day</span>
-                <div style="width: 70px;"></div> 
-            </div>
-            
-            <div class="filter-zone">
-                <div class="theme-bubble">
-                    <span id="current-theme-label">Tout</span>
-                    <select id="category-select">
-                        <option value="Tout">Tout</option>
-                        <option value="Technologie">Technologie</option>
-                        <option value="Histoire">Histoire</option>
-                        <option value="Science">Science</option>
-                        <option value="Nature">Nature</option>
-                        <option value="Insolite">Insolite</option>
-                    </select>
-                </div>
-            </div>
+            <span>📅 1 Thing a Day</span>
+            <span id="streak">🔥 0 appris</span>
         </header>
+
+        <div class="filter-zone">
+            <div class="theme-bubble">
+                <span id="current-theme-label">Tout</span>
+                <select id="category-select">
+                    <option value="Tout">Tout</option>
+                    <option value="Technologie">Technologie</option>
+                    <option value="Histoire">Histoire</option>
+                    <option value="Science">Science</option>
+                    <option value="Nature">Nature</option>
+                    <option value="Insolite">Insolite</option>
+                </select>
+            </div>
+        </div>
 
         <div class="card-container">
             <div id="card" class="card">
@@ -38,11 +38,24 @@
         </div>
 
         <nav class="nav-bar">
-            <div class="nav-item active"><span>📅</span>Daily</div>
-            <div class="nav-item"><span>📖</span>Historique</div>
-            <div class="nav-item"><span>📊</span>Stats</div>
+            <button class="nav-item active"><span>📅</span>Daily</button>
+            <button class="nav-item"><span>📖</span>Historique</button>
+            <button class="nav-item"><span>📊</span>Stats</button>
         </nav>
     </div>
+
+    <div class="history-view" id="historyView">
+        <button class="close-btn" onclick="closeHistory()">✕</button>
+        <h2>📖 Ce que j'ai appris</h2>
+        <div id="historyList"></div>
+    </div>
+
+    <div class="stats-view" id="statsView">
+        <button class="close-btn" onclick="closeStats()">✕</button>
+        <h2>📊 Mes statistiques</h2>
+        <div id="statsContainer"></div>
+    </div>
+
     <script type="module" src="app.js"></script>
 </body>
 </html>
