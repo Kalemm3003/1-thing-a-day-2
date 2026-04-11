@@ -26,10 +26,11 @@ body {
     flex-direction: column;
 }
 
+/* Status bar - s'adapte automatiquement */
 .status-bar {
-    padding-top: env(safe-area-inset-top, 20px);
-    padding-left: 24px;
-    padding-right: 24px;
+    padding-top: max(12px, env(safe-area-inset-top, 20px));
+    padding-left: max(16px, env(safe-area-inset-left, 20px));
+    padding-right: max(16px, env(safe-area-inset-right, 20px));
     padding-bottom: 12px;
     display: flex;
     justify-content: space-between;
@@ -61,16 +62,62 @@ body {
     background: rgba(59, 130, 246, 0.3);
     padding: 6px 12px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.daily-badge::before {
-    content: "📅";
-    font-size: 12px;
+.daily-badge span {
+    font-weight: 600;
+}
+
+/* Daily reminder - position adaptative */
+.daily-reminder {
+    position: absolute;
+    top: calc(env(safe-area-inset-top, 20px) + 55px);
+    left: max(16px, env(safe-area-inset-left, 16px));
+    background: rgba(59, 130, 246, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 8px 16px;
+    border: 0.5px solid rgba(96, 165, 250, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 15;
+    max-width: 70%;
+}
+
+.daily-reminder:active {
+    background: rgba(59, 130, 246, 0.4);
+    transform: scale(0.97);
+}
+
+.reminder-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reminder-icon {
+    font-size: 16px;
+}
+
+.reminder-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #60a5fa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reminder-arrow {
+    font-size: 16px;
+    color: #60a5fa;
+    font-weight: bold;
 }
 
 .swipe-container {
@@ -172,7 +219,7 @@ body {
 
 .swipe-indicator {
     position: absolute;
-    bottom: 80px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
     left: 0;
     right: 0;
     text-align: center;
@@ -199,7 +246,7 @@ body {
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
     padding: 12px 24px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
     display: flex;
     justify-content: space-around;
     border-top: 0.5px solid rgba(255, 255, 255, 0.1);
@@ -242,7 +289,7 @@ body {
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     overflow-y: auto;
-    padding: 80px 20px 100px;
+    padding: calc(env(safe-area-inset-top, 20px) + 60px) 20px calc(env(safe-area-inset-bottom, 20px) + 80px);
 }
 
 .history-view.open, .stats-view.open {
@@ -288,7 +335,7 @@ body {
 
 .close-btn {
     position: fixed;
-    top: 60px;
+    top: calc(env(safe-area-inset-top, 20px) + 20px);
     right: 20px;
     background: rgba(255, 255, 255, 0.1);
     border: none;
@@ -327,7 +374,7 @@ body {
 
 .toast {
     position: fixed;
-    bottom: 100px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.8);
@@ -340,40 +387,45 @@ body {
     white-space: nowrap;
 }
 
-.definition-popup {
+.info-popup, .definition-popup {
     position: fixed;
-    bottom: 200px;
-    left: 20px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.95);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.98);
     backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 20px;
+    border-radius: 28px 28px 0 0;
+    padding: 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 20px));
     z-index: 400;
     animation: slideUp 0.3s ease;
-    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-top: 1px solid rgba(96, 165, 250, 0.3);
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
-.definition-popup h4 {
+.info-popup h4, .definition-popup h4 {
     color: #60a5fa;
-    margin-bottom: 8px;
-    font-size: 18px;
+    margin-bottom: 12px;
+    font-size: 20px;
 }
 
-.definition-popup p {
+.info-popup p, .definition-popup p {
     color: #cbd5e1;
-    font-size: 15px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
 }
 
-.definition-popup button {
-    margin-top: 12px;
-    background: rgba(255,255,255,0.1);
+.info-popup button, .definition-popup button {
+    background: rgba(255, 255, 255, 0.1);
     border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 12px 20px;
+    border-radius: 30px;
     color: white;
+    font-size: 16px;
     cursor: pointer;
+    width: 100%;
 }
 
 @keyframes slideUp {
@@ -393,241 +445,21 @@ body {
     100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
 }
 
-/* Daily reminder (rappel du fait du jour) */
-.daily-reminder {
-    background: rgba(59, 130, 246, 0.15);
-    backdrop-filter: blur(10px);
-    margin: 8px 16px 0 16px;
-    border-radius: 30px;
-    padding: 8px 16px;
-    border: 0.5px solid rgba(96, 165, 250, 0.3);
-    cursor: pointer;
-    transition: all 0.2s;
-    z-index: 15;
-}
-
-.daily-reminder:active {
-    background: rgba(59, 130, 246, 0.3);
-    transform: scale(0.98);
-}
-
-.reminder-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.reminder-icon {
-    font-size: 18px;
-}
-
-.reminder-title {
-    flex: 1;
-    font-size: 14px;
-    color: #60a5fa;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.reminder-arrow {
-    font-size: 18px;
-    color: #60a5fa;
-}
-
-/* Calendrier avec date */
-.daily-badge {
-    background: rgba(59, 130, 246, 0.3);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.calendar-icon {
-    font-size: 14px;
-}
-
-.calendar-date {
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* Popup améliorée */
-.info-popup {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(15, 23, 42, 0.98);
-    backdrop-filter: blur(20px);
-    border-radius: 28px 28px 0 0;
-    padding: 24px;
-    z-index: 400;
-    animation: slideUp 0.3s ease;
-    border-top: 1px solid rgba(96, 165, 250, 0.3);
-    max-height: 70vh;
-    overflow-y: auto;
-}
-
-.info-popup h4 {
-    color: #60a5fa;
-    margin-bottom: 12px;
-    font-size: 20px;
-}
-
-.info-popup p {
-    color: #cbd5e1;
-    font-size: 16px;
-    line-height: 1.5;
-    margin-bottom: 20px;
-}
-
-.info-popup button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 30px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    width: 100%;
-}
-
-.definition-popup {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(15, 23, 42, 0.98);
-    backdrop-filter: blur(20px);
-    border-radius: 28px 28px 0 0;
-    padding: 24px;
-    z-index: 400;
-    animation: slideUp 0.3s ease;
-    border-top: 1px solid rgba(96, 165, 250, 0.3);
-}
-
-.definition-popup h4 {
-    color: #60a5fa;
-    margin-bottom: 12px;
-    font-size: 20px;
-}
-
-.definition-popup p {
-    color: #cbd5e1;
-    font-size: 16px;
-    line-height: 1.5;
-    margin-bottom: 20px;
-}
-
-.definition-popup button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 30px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    width: 100%;
-}
-
-/* Daily reminder (rappel du fait du jour) - EN HAUT À GAUCHE */
-.daily-reminder {
-    position: absolute;
-    top: 70px;
-    left: 16px;
-    background: rgba(59, 130, 246, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 30px;
-    padding: 8px 16px;
-    border: 0.5px solid rgba(96, 165, 250, 0.3);
-    cursor: pointer;
-    transition: all 0.2s;
-    z-index: 15;
-    max-width: 70%;
-}
-
-.daily-reminder:active {
-    background: rgba(59, 130, 246, 0.4);
-    transform: scale(0.97);
-}
-
-.reminder-content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.reminder-icon {
-    font-size: 16px;
-}
-
-.reminder-title {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 500;
-    color: #60a5fa;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.reminder-arrow {
-    font-size: 16px;
-    color: #60a5fa;
-    font-weight: bold;
-}
-
-/* Status bar avec calendrier */
-.status-bar {
-    padding-top: env(safe-area-inset-top, 20px);
-    padding-left: 24px;
-    padding-right: 24px;
-    padding-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    font-weight: 500;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    z-index: 100;
-}
-
-.daily-badge {
-    background: rgba(59, 130, 246, 0.3);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.daily-badge span {
-    font-weight: 600;
-}
-
-/* Correction pour l'affichage en mode standalone (écran d'accueil) */
+/* Mode standalone (écran d'accueil) - corrections spécifiques */
 @media (display-mode: standalone) {
     .status-bar {
-        padding-top: 0px !important;
+        padding-top: 8px !important;
     }
     
-    .bottom-menu {
-        padding-bottom: 20px !important;
+    .daily-reminder {
+        top: 50px !important;
     }
     
     .swipe-indicator {
         bottom: 90px !important;
     }
     
-    .daily-reminder {
-        top: 50px !important;
+    .bottom-menu {
+        padding-bottom: 20px !important;
     }
 }
