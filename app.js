@@ -12,18 +12,35 @@ const categorySelect = document.getElementById('category-select');
 function init() {
     loadFactOfDay();
     setupGestures();
+    updateStatsUI(); // Charge le compteur au démarrage
     
     categorySelect.addEventListener('change', (e) => {
         currentTheme = e.target.value;
         themeLabel.innerText = currentTheme;
-        nextFact(); // On change de fait immédiatement quand on change de thème
+        nextFact();
     });
+}
+
+function updateStatsUI() {
+    const streakEl = document.getElementById('streak');
+    if (streakEl) {
+        streakEl.innerText = `🔥 ${learnedFacts.length} appris`;
+    }
 }
 
 function loadFactOfDay() {
     const today = new Date();
     const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-    currentFact = FACTS.find(f => f.dayOfYear === dayOfYear) || FACTS[0];
+    
+    // On cherche d'abord le fait du jour précis
+    let fact = FACTS.find(f => f.dayOfYear === dayOfYear);
+    
+    // Si déjà appris ou inexistant, on prend le premier non appris
+    if (!fact || learnedFacts.includes(fact.id)) {
+        fact = FACTS.find(f => !learnedFacts.includes(f.id));
+    }
+
+    currentFact = fact || FACTS[0];
     renderFact();
 }
 
@@ -51,14 +68,17 @@ function setupGestures() {
     card.addEventListener('touchstart', e => {
         startX = e.touches[0].clientX;
         card.style.transition = 'none';
-    });
+    }, {passive: true});
+
     card.addEventListener('touchmove', e => {
         const move = e.touches[0].clientX - startX;
         card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
-    });
+    }, {passive: true});
+
     card.addEventListener('touchend', e => {
         const diff = e.changedTouches[0].clientX - startX;
-        card.style.transition = 'all 0.4s ease';
+        card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        
         if (Math.abs(diff) > 100) {
             if (diff > 0) learned(currentFact.id);
             nextFact();
@@ -72,22 +92,19 @@ function learned(id) {
     if (!learnedFacts.includes(id)) {
         learnedFacts.push(id);
         localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
+        updateStatsUI();
     }
 }
 
 function nextFact() {
     card.style.opacity = '0';
     setTimeout(() => {
-        // Filtrer les faits par thème
         let pool = FACTS;
         if (currentTheme !== "Tout") {
             pool = FACTS.filter(f => f.category === currentTheme);
         }
 
-        // Trouver un fait non appris dans ce thème
         let next = pool.find(f => !learnedFacts.includes(f.id) && f.id !== currentFact.id);
-        
-        // Si tout est appris dans ce thème, on prend un hasard dans le thème
         if (!next) next = pool[Math.floor(Math.random() * pool.length)];
         
         currentFact = next || FACTS[0];

@@ -307,3 +307,36 @@ header {
     content: '▾';
     font-size: 0.8rem;
 }
+
+/* Ajustement de la bulle de thème pour qu'elle ressemble à la carte */
+.theme-selector {
+    position: relative;
+    margin-top: 15px; /* On descend la bulle par rapport au haut */
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+}
+
+.theme-bubble {
+    background: var(--card); /* Même couleur que la carte */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+#category-select {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
