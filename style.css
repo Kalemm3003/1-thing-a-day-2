@@ -26,11 +26,11 @@ body {
     flex-direction: column;
 }
 
-/* Status bar - s'adapte automatiquement */
+/* Status bar - version simplifiée et fiable */
 .status-bar {
-    padding-top: max(12px, env(safe-area-inset-top, 20px));
-    padding-left: max(16px, env(safe-area-inset-left, 20px));
-    padding-right: max(16px, env(safe-area-inset-right, 20px));
+    padding-top: 12px;
+    padding-left: 20px;
+    padding-right: 20px;
     padding-bottom: 12px;
     display: flex;
     justify-content: space-between;
@@ -40,6 +40,13 @@ body {
     background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(10px);
     z-index: 100;
+}
+
+/* Correction pour iPhone avec notch */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .status-bar {
+        padding-top: calc(12px + env(safe-area-inset-top));
+    }
 }
 
 .streak-badge {
@@ -73,11 +80,11 @@ body {
     font-weight: 600;
 }
 
-/* Daily reminder - position adaptative */
+/* Daily reminder - position fixe fiable */
 .daily-reminder {
     position: absolute;
-    top: calc(env(safe-area-inset-top, 20px) + 55px);
-    left: max(16px, env(safe-area-inset-left, 16px));
+    top: 70px;
+    left: 16px;
     background: rgba(59, 130, 246, 0.2);
     backdrop-filter: blur(10px);
     border-radius: 30px;
@@ -87,6 +94,12 @@ body {
     transition: all 0.2s;
     z-index: 15;
     max-width: 70%;
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+    .daily-reminder {
+        top: calc(60px + env(safe-area-inset-top));
+    }
 }
 
 .daily-reminder:active {
@@ -128,6 +141,7 @@ body {
     justify-content: center;
     overflow: hidden;
     cursor: grab;
+    min-height: 0;
 }
 
 .swipe-container:active {
@@ -135,7 +149,7 @@ body {
 }
 
 .card {
-    position: absolute;
+    position: relative;
     width: calc(100% - 32px);
     max-width: 380px;
     background: rgba(30, 41, 59, 0.9);
@@ -146,6 +160,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     will-change: transform;
+    margin: 20px 0;
 }
 
 .card.swiping-left {
@@ -219,7 +234,7 @@ body {
 
 .swipe-indicator {
     position: absolute;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+    bottom: 80px;
     left: 0;
     right: 0;
     text-align: center;
@@ -236,21 +251,27 @@ body {
     z-index: 10;
 }
 
-.swipe-indicator span {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .swipe-indicator {
+        bottom: calc(70px + env(safe-area-inset-bottom));
+    }
 }
 
 .bottom-menu {
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
     padding: 12px 24px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+    padding-bottom: 12px;
     display: flex;
     justify-content: space-around;
     border-top: 0.5px solid rgba(255, 255, 255, 0.1);
     z-index: 20;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .bottom-menu {
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    }
 }
 
 .menu-item {
@@ -289,7 +310,14 @@ body {
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     overflow-y: auto;
-    padding: calc(env(safe-area-inset-top, 20px) + 60px) 20px calc(env(safe-area-inset-bottom, 20px) + 80px);
+    padding: 80px 20px 100px;
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+    .history-view, .stats-view {
+        padding-top: calc(60px + env(safe-area-inset-top));
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
 }
 
 .history-view.open, .stats-view.open {
@@ -335,7 +363,7 @@ body {
 
 .close-btn {
     position: fixed;
-    top: calc(env(safe-area-inset-top, 20px) + 20px);
+    top: 20px;
     right: 20px;
     background: rgba(255, 255, 255, 0.1);
     border: none;
@@ -346,6 +374,12 @@ body {
     cursor: pointer;
     z-index: 201;
     backdrop-filter: blur(10px);
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+    .close-btn {
+        top: calc(20px + env(safe-area-inset-top));
+    }
 }
 
 .stats-card {
@@ -374,7 +408,7 @@ body {
 
 .toast {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+    bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.8);
@@ -387,6 +421,12 @@ body {
     white-space: nowrap;
 }
 
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .toast {
+        bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+}
+
 .info-popup, .definition-popup {
     position: fixed;
     bottom: 0;
@@ -396,12 +436,18 @@ body {
     backdrop-filter: blur(20px);
     border-radius: 28px 28px 0 0;
     padding: 24px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 20px));
+    padding-bottom: 24px;
     z-index: 400;
     animation: slideUp 0.3s ease;
     border-top: 1px solid rgba(96, 165, 250, 0.3);
     max-height: 70vh;
     overflow-y: auto;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .info-popup, .definition-popup {
+        padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
 }
 
 .info-popup h4, .definition-popup h4 {
@@ -452,14 +498,18 @@ body {
     }
     
     .daily-reminder {
-        top: 50px !important;
+        top: 55px !important;
     }
     
     .swipe-indicator {
-        bottom: 90px !important;
+        bottom: 85px !important;
     }
     
     .bottom-menu {
-        padding-bottom: 20px !important;
+        padding-bottom: 15px !important;
+    }
+    
+    .card {
+        margin: 10px 0;
     }
 }
