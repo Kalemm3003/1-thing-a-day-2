@@ -471,3 +471,18 @@ body {
     70% { opacity: 1; }
     100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
 }
+
+/* Mode accueil (standalone) - barre du bas plus basse */
+@media (display-mode: standalone) {
+    .bottom-menu {
+        padding-bottom: 35px !important;
+    }
+    
+    .swipe-indicator {
+        bottom: 100px !important;
+    }
+    
+    .toast {
+        bottom: 120px !important;
+    }
+}
