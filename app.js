@@ -4,16 +4,14 @@ let learnedFacts = JSON.parse(localStorage.getItem('learnedFacts')) || [];
 let currentFact = null;
 let startX = 0;
 let currentView = 'daily';
-let isPopupOpen = false;  // Pour savoir si une popup est ouverte
+let isPopupOpen = false;
 
 const card = document.getElementById('card');
 
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
-    
     isPopupOpen = true;
-    
     let overlay = document.createElement('div');
     overlay.className = 'info-popup';
     overlay.innerHTML = `
@@ -25,60 +23,26 @@ function showPopup(title, content) {
         </div>
     `;
     document.body.appendChild(overlay);
-    
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
-    let currentY = 0;
-    
     const closeWithAnimation = () => {
         popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
         popupBox.style.transform = 'translateY(100px)';
         popupBox.style.opacity = '0';
-        setTimeout(() => {
-            overlay.remove();
-            isPopupOpen = false;
-        }, 200);
+        setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
     };
-    
     overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
-    
-    // Clic à l'extérieur - fermeture avec animation
-    overlay.addEventListener('click', (e) => { 
-        if (e.target === overlay) closeWithAnimation(); 
-    });
-    
-    // Swipe vers le bas avec suivi du doigt
-    popupBox.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        popupBox.style.transition = 'none';
-        e.stopPropagation();
-    });
-    
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
+    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; popupBox.style.transition = 'none'; e.stopPropagation(); });
     popupBox.addEventListener('touchmove', (e) => {
-        currentY = e.touches[0].clientY;
-        const moveY = currentY - startY;
-        if (moveY > 0) {
-            popupBox.style.transform = `translateY(${moveY}px)`;
-            popupBox.style.opacity = `${1 - moveY / 300}`;
-        }
+        const moveY = e.touches[0].clientY - startY;
+        if (moveY > 0) { popupBox.style.transform = `translateY(${moveY}px)`; popupBox.style.opacity = `${1 - moveY / 300}`; }
         e.stopPropagation();
     });
-    
     popupBox.addEventListener('touchend', (e) => {
-        const moveY = currentY - startY;
-        if (moveY > 100) {
-            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
-            popupBox.style.transform = 'translateY(200px)';
-            popupBox.style.opacity = '0';
-            setTimeout(() => {
-                overlay.remove();
-                isPopupOpen = false;
-            }, 200);
-        } else {
-            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
-            popupBox.style.transform = 'translateY(0)';
-            popupBox.style.opacity = '1';
-        }
+        const moveY = e.changedTouches[0].clientY - startY;
+        if (moveY > 100) closeWithAnimation();
+        else { popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease'; popupBox.style.transform = 'translateY(0)'; popupBox.style.opacity = '1'; }
         e.stopPropagation();
     });
 }
@@ -86,9 +50,7 @@ function showPopup(title, content) {
 function showDefinition(definition) {
     let oldPopup = document.querySelector('.definition-popup, .info-popup');
     if (oldPopup) oldPopup.remove();
-    
     isPopupOpen = true;
-    
     let overlay = document.createElement('div');
     overlay.className = 'definition-popup';
     overlay.innerHTML = `
@@ -100,58 +62,26 @@ function showDefinition(definition) {
         </div>
     `;
     document.body.appendChild(overlay);
-    
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
-    let currentY = 0;
-    
     const closeWithAnimation = () => {
         popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
         popupBox.style.transform = 'translateY(100px)';
         popupBox.style.opacity = '0';
-        setTimeout(() => {
-            overlay.remove();
-            isPopupOpen = false;
-        }, 200);
+        setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
     };
-    
     overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
-    
-    overlay.addEventListener('click', (e) => { 
-        if (e.target === overlay) closeWithAnimation(); 
-    });
-    
-    popupBox.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        popupBox.style.transition = 'none';
-        e.stopPropagation();
-    });
-    
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
+    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; popupBox.style.transition = 'none'; e.stopPropagation(); });
     popupBox.addEventListener('touchmove', (e) => {
-        currentY = e.touches[0].clientY;
-        const moveY = currentY - startY;
-        if (moveY > 0) {
-            popupBox.style.transform = `translateY(${moveY}px)`;
-            popupBox.style.opacity = `${1 - moveY / 300}`;
-        }
+        const moveY = e.touches[0].clientY - startY;
+        if (moveY > 0) { popupBox.style.transform = `translateY(${moveY}px)`; popupBox.style.opacity = `${1 - moveY / 300}`; }
         e.stopPropagation();
     });
-    
     popupBox.addEventListener('touchend', (e) => {
-        const moveY = currentY - startY;
-        if (moveY > 100) {
-            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
-            popupBox.style.transform = 'translateY(200px)';
-            popupBox.style.opacity = '0';
-            setTimeout(() => {
-                overlay.remove();
-                isPopupOpen = false;
-            }, 200);
-        } else {
-            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
-            popupBox.style.transform = 'translateY(0)';
-            popupBox.style.opacity = '1';
-        }
+        const moveY = e.changedTouches[0].clientY - startY;
+        if (moveY > 100) closeWithAnimation();
+        else { popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease'; popupBox.style.transform = 'translateY(0)'; popupBox.style.opacity = '1'; }
         e.stopPropagation();
     });
 }
@@ -180,28 +110,52 @@ function renderFact(fact) {
         el.onclick = (e) => { e.stopPropagation(); showDefinition(el.dataset.def); };
     });
     card.querySelector('.more-btn').onclick = () => showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
-    card.style.transform = 'translateX(0) rotate(0)';
-    card.style.opacity = '1';
+    
+    // Reset style pour l'entrée de la nouvelle carte
+    card.style.transition = 'none';
+    card.style.transform = 'scale(0.9) translateY(20px)';
+    card.style.opacity = '0';
+    setTimeout(() => {
+        card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        card.style.transform = 'translateX(0) rotate(0) scale(1)';
+        card.style.opacity = '1';
+    }, 10);
 }
 
 function setupGestures() {
-    card.ontouchstart = e => { startX = e.touches[0].clientX; card.style.transition = 'none'; };
+    let moveX = 0;
+    card.ontouchstart = e => { 
+        startX = e.touches[0].clientX; 
+        card.style.transition = 'none'; 
+    };
     card.ontouchmove = e => {
-        const move = e.touches[0].clientX - startX;
-        card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
-        card.style.opacity = `${1 - Math.abs(move) / 500}`;
+        moveX = e.touches[0].clientX - startX;
+        const rotation = moveX / 15;
+        card.style.transform = `translateX(${moveX}px) rotate(${rotation}deg)`;
+        card.style.opacity = `${1 - Math.abs(moveX) / 1000}`;
     };
     card.ontouchend = e => {
         const diff = e.changedTouches[0].clientX - startX;
-        card.style.transition = 'all 0.3s ease';
-        if (Math.abs(diff) > 100) {
+        if (Math.abs(diff) > 120) {
+            // Animation de sortie rapide
+            const outX = diff > 0 ? 1000 : -1000;
+            card.style.transition = 'all 0.5s ease-in';
+            card.style.transform = `translateX(${outX}px) rotate(${outX / 20}deg)`;
+            card.style.opacity = '0';
+            
             if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
                 learnedFacts.push(currentFact.id);
                 localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
                 updateStreak();
             }
-            renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]);
+            
+            // Charger la nouvelle carte après la sortie
+            setTimeout(() => {
+                renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]);
+            }, 300);
         } else {
+            // Retour au centre
+            card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             card.style.transform = 'translateX(0) rotate(0)';
             card.style.opacity = '1';
         }
@@ -255,37 +209,21 @@ function updateActiveMenu() {
 }
 
 let globalStartX = 0;
-let isSwipingBack = false;
+function onGlobalTouchStart(e) { globalStartX = e.touches[0].clientX; }
+function onGlobalTouchEnd(e) {
+    const deltaX = e.changedTouches[0].clientX - globalStartX;
+    if (deltaX > 80 && !isPopupOpen && currentView !== 'daily') {
+        closeHistory(); closeStats();
+    }
+}
 
 function enableSwipeBack() {
     document.addEventListener('touchstart', onGlobalTouchStart);
     document.addEventListener('touchend', onGlobalTouchEnd);
 }
-
 function disableSwipeBack() {
     document.removeEventListener('touchstart', onGlobalTouchStart);
     document.removeEventListener('touchend', onGlobalTouchEnd);
-}
-
-function onGlobalTouchStart(e) {
-    globalStartX = e.touches[0].clientX;
-    isSwipingBack = true;
-}
-
-function onGlobalTouchEnd(e) {
-    if (!isSwipingBack) return;
-    isSwipingBack = false;
-    const endX = e.changedTouches[0].clientX;
-    const deltaX = endX - globalStartX;
-    
-    // Ne pas fermer si une popup est ouverte
-    if (deltaX > 60 && !isPopupOpen) {
-        if (document.getElementById('historyView').classList.contains('open')) {
-            closeHistory();
-        } else if (document.getElementById('statsView').classList.contains('open')) {
-            closeStats();
-        }
-    }
 }
 
 window.showFactDetail = (id) => {
