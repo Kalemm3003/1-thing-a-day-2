@@ -281,3 +281,12 @@ header {
 .swipe-back-area.active {
     pointer-events: auto;
 }
+
+/* Bloquer le double-clic zoom sur iPhone */
+* {
+    touch-action: manipulation;
+}
+
+button, .nav-item, .hard-word, .more-btn, .close-btn, .history-item {
+    touch-action: manipulation;
+}

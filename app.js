@@ -323,3 +323,14 @@ window.showDefinition = showDefinition;
 window.showPopup = showPopup;
 
 init();
+
+// ==================== DÉSACTIVER DOUBLE-CLIC ZOOM ====================
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+document.addEventListener('gesturestart', (e) => {
+    e.preventDefault();
+});
