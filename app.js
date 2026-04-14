@@ -146,3 +146,144 @@ document.querySelectorAll('.nav-item')[2].onclick = showStats;
 renderFact(FACTS[0]);
 setupGestures();
 updateStreak();
+
+// ==================== AMÉLIORATIONS POPUPS ====================
+// Remplacer les fonctions showPopup et showDefinition
+function showPopup(title, content) {
+    let oldPopup = document.querySelector('.info-popup, .definition-popup');
+    if (oldPopup) oldPopup.remove();
+    
+    let overlay = document.createElement('div');
+    overlay.className = 'info-popup';
+    overlay.innerHTML = `
+        <div class="popup-box">
+            <h4>${title}</h4>
+            <p>${content}</p>
+            <button class="close-popup-btn">Fermer</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    let popupBox = overlay.querySelector('.popup-box');
+    let startY = 0;
+    
+    // Fermer avec le bouton
+    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
+    
+    // Fermer en cliquant sur l'overlay (à l'extérieur de la popup)
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+    });
+    
+    // Fermer par swipe vers le bas
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        e.stopPropagation();
+    });
+    
+    popupBox.addEventListener('touchmove', (e) => {
+        const moveY = e.touches[0].clientY - startY;
+        if (moveY > 60) overlay.remove();
+        e.stopPropagation();
+    });
+}
+
+function showDefinition(definition) {
+    let oldPopup = document.querySelector('.definition-popup, .info-popup');
+    if (oldPopup) oldPopup.remove();
+    
+    let overlay = document.createElement('div');
+    overlay.className = 'definition-popup';
+    overlay.innerHTML = `
+        <div class="popup-box">
+            <h4>📖 Définition</h4>
+            <p>${definition}</p>
+            <button class="close-popup-btn">Fermer</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    let popupBox = overlay.querySelector('.popup-box');
+    let startY = 0;
+    
+    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
+    
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+    });
+    
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        e.stopPropagation();
+    });
+    
+    popupBox.addEventListener('touchmove', (e) => {
+        const moveY = e.touches[0].clientY - startY;
+        if (moveY > 60) overlay.remove();
+        e.stopPropagation();
+    });
+}
+
+// ==================== SWIPE RETOUR AMÉLIORÉ ====================
+let globalStartX = 0;
+let isSwipingBack = false;
+
+function enableSwipeBack() {
+    document.addEventListener('touchstart', onGlobalTouchStart);
+    document.addEventListener('touchend', onGlobalTouchEnd);
+}
+
+function disableSwipeBack() {
+    document.removeEventListener('touchstart', onGlobalTouchStart);
+    document.removeEventListener('touchend', onGlobalTouchEnd);
+}
+
+function onGlobalTouchStart(e) {
+    globalStartX = e.touches[0].clientX;
+    isSwipingBack = true;
+}
+
+function onGlobalTouchEnd(e) {
+    if (!isSwipingBack) return;
+    isSwipingBack = false;
+    
+    const endX = e.changedTouches[0].clientX;
+    const deltaX = endX - globalStartX;
+    
+    // N'importe quel swipe vers la droite (deltaX > 60)
+    if (deltaX > 60) {
+        if (document.getElementById('historyView').classList.contains('open')) {
+            closeHistory();
+        } else if (document.getElementById('statsView').classList.contains('open')) {
+            closeStats();
+        }
+    }
+}
+
+// Remplacer les anciennes fonctions closeHistory et closeStats pour désactiver le swipe retour
+window.closeHistory = () => { 
+    document.getElementById('historyView').classList.remove('open'); 
+    currentView = 'daily'; 
+    updateActiveMenu(); 
+    disableSwipeBack();
+};
+window.closeStats = () => { 
+    document.getElementById('statsView').classList.remove('open'); 
+    currentView = 'daily'; 
+    updateActiveMenu(); 
+    disableSwipeBack();
+};
+
+// Modifier showHistory et showStats pour activer le swipe retour
+const originalShowHistory = showHistory;
+const originalShowStats = showStats;
+
+showHistory = () => {
+    originalShowHistory();
+    enableSwipeBack();
+};
+
+showStats = () => {
+    originalShowStats();
+    enableSwipeBack();
+};
