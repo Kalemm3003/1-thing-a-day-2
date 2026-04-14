@@ -4,12 +4,15 @@ let learnedFacts = JSON.parse(localStorage.getItem('learnedFacts')) || [];
 let currentFact = null;
 let startX = 0;
 let currentView = 'daily';
+let isPopupOpen = false;  // Pour savoir si une popup est ouverte
 
 const card = document.getElementById('card');
 
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
+    
+    isPopupOpen = true;
     
     let overlay = document.createElement('div');
     overlay.className = 'info-popup';
@@ -27,8 +30,22 @@ function showPopup(title, content) {
     let startY = 0;
     let currentY = 0;
     
-    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    const closeWithAnimation = () => {
+        popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+        popupBox.style.transform = 'translateY(100px)';
+        popupBox.style.opacity = '0';
+        setTimeout(() => {
+            overlay.remove();
+            isPopupOpen = false;
+        }, 200);
+    };
+    
+    overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
+    
+    // Clic à l'extérieur - fermeture avec animation
+    overlay.addEventListener('click', (e) => { 
+        if (e.target === overlay) closeWithAnimation(); 
+    });
     
     // Swipe vers le bas avec suivi du doigt
     popupBox.addEventListener('touchstart', (e) => {
@@ -49,10 +66,16 @@ function showPopup(title, content) {
     
     popupBox.addEventListener('touchend', (e) => {
         const moveY = currentY - startY;
-        popupBox.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
         if (moveY > 100) {
-            overlay.remove();
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+            popupBox.style.transform = 'translateY(200px)';
+            popupBox.style.opacity = '0';
+            setTimeout(() => {
+                overlay.remove();
+                isPopupOpen = false;
+            }, 200);
         } else {
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
             popupBox.style.transform = 'translateY(0)';
             popupBox.style.opacity = '1';
         }
@@ -63,6 +86,8 @@ function showPopup(title, content) {
 function showDefinition(definition) {
     let oldPopup = document.querySelector('.definition-popup, .info-popup');
     if (oldPopup) oldPopup.remove();
+    
+    isPopupOpen = true;
     
     let overlay = document.createElement('div');
     overlay.className = 'definition-popup';
@@ -80,10 +105,22 @@ function showDefinition(definition) {
     let startY = 0;
     let currentY = 0;
     
-    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    const closeWithAnimation = () => {
+        popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+        popupBox.style.transform = 'translateY(100px)';
+        popupBox.style.opacity = '0';
+        setTimeout(() => {
+            overlay.remove();
+            isPopupOpen = false;
+        }, 200);
+    };
     
-    // Swipe vers le bas avec suivi du doigt
+    overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
+    
+    overlay.addEventListener('click', (e) => { 
+        if (e.target === overlay) closeWithAnimation(); 
+    });
+    
     popupBox.addEventListener('touchstart', (e) => {
         startY = e.touches[0].clientY;
         popupBox.style.transition = 'none';
@@ -102,10 +139,16 @@ function showDefinition(definition) {
     
     popupBox.addEventListener('touchend', (e) => {
         const moveY = currentY - startY;
-        popupBox.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
         if (moveY > 100) {
-            overlay.remove();
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+            popupBox.style.transform = 'translateY(200px)';
+            popupBox.style.opacity = '0';
+            setTimeout(() => {
+                overlay.remove();
+                isPopupOpen = false;
+            }, 200);
         } else {
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
             popupBox.style.transform = 'translateY(0)';
             popupBox.style.opacity = '1';
         }
@@ -169,8 +212,8 @@ function showHistory() {
     currentView = 'history';
     updateActiveMenu();
     const list = FACTS.filter(f => learnedFacts.includes(f.id));
-    document.getElementById('historyList').innerHTML = list.length === 0 ? 
-        '<div class="empty-state">📭 Aucun fait appris</div>' : 
+    document.getElementById('historyList').innerHTML = list.length === 0 ?
+        '<div class="empty-state">📭 Aucun fait appris</div>' :
         list.slice().reverse().map(f => `
             <div class="history-item" onclick="window.showFactDetail(${f.id})">
                 <h3>${f.title}</h3>
@@ -234,7 +277,9 @@ function onGlobalTouchEnd(e) {
     isSwipingBack = false;
     const endX = e.changedTouches[0].clientX;
     const deltaX = endX - globalStartX;
-    if (deltaX > 60) {
+    
+    // Ne pas fermer si une popup est ouverte
+    if (deltaX > 60 && !isPopupOpen) {
         if (document.getElementById('historyView').classList.contains('open')) {
             closeHistory();
         } else if (document.getElementById('statsView').classList.contains('open')) {
