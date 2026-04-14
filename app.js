@@ -302,3 +302,30 @@ document.querySelectorAll('.nav-item')[2].onclick = showStats;
 renderFact(FACTS[0]);
 setupGestures();
 updateStreak();
+
+function nextFact() {
+    card.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.2s ease-out';
+    card.style.transform = 'translateX(100px) rotate(5deg)';
+    card.style.opacity = '0';
+    setTimeout(() => {
+        const next = getNextUnlearnedFact();
+        renderFact(next);
+        card.style.transition = 'none';
+        card.style.transform = 'translateX(-50px) rotate(-3deg)';
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.25s ease-out';
+            card.style.transform = 'translateX(0) rotate(0)';
+            card.style.opacity = '1';
+        }, 10);
+    }, 200);
+}
+
+function getNextUnlearnedFact() {
+    let availableFacts = FACTS.filter(f => !learnedFacts.includes(f.id));
+    if (availableFacts.length === 0) {
+        showToast('🏆 Félicitations ! Tu as tout appris !');
+        return FACTS[Math.floor(Math.random() * FACTS.length)];
+    }
+    return availableFacts[Math.floor(Math.random() * availableFacts.length)];
+}
