@@ -243,3 +243,12 @@ header {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* Petit trait gris en haut de la popup (handle) */
+.popup-handle {
+    width: 40px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    margin: 0 auto 16px auto;
+}

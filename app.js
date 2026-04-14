@@ -15,6 +15,7 @@ function showPopup(title, content) {
     overlay.className = 'info-popup';
     overlay.innerHTML = `
         <div class="popup-box">
+            <div class="popup-handle"></div>
             <h4>${title}</h4>
             <p>${content}</p>
             <button class="close-popup-btn">Fermer</button>
@@ -24,12 +25,39 @@ function showPopup(title, content) {
     
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
+    let currentY = 0;
     
     overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
     
-    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; e.stopPropagation(); });
-    popupBox.addEventListener('touchmove', (e) => { if (e.touches[0].clientY - startY > 60) overlay.remove(); e.stopPropagation(); });
+    // Swipe vers le bas avec suivi du doigt
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        popupBox.style.transition = 'none';
+        e.stopPropagation();
+    });
+    
+    popupBox.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const moveY = currentY - startY;
+        if (moveY > 0) {
+            popupBox.style.transform = `translateY(${moveY}px)`;
+            popupBox.style.opacity = `${1 - moveY / 300}`;
+        }
+        e.stopPropagation();
+    });
+    
+    popupBox.addEventListener('touchend', (e) => {
+        const moveY = currentY - startY;
+        popupBox.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        if (moveY > 100) {
+            overlay.remove();
+        } else {
+            popupBox.style.transform = 'translateY(0)';
+            popupBox.style.opacity = '1';
+        }
+        e.stopPropagation();
+    });
 }
 
 function showDefinition(definition) {
@@ -40,6 +68,7 @@ function showDefinition(definition) {
     overlay.className = 'definition-popup';
     overlay.innerHTML = `
         <div class="popup-box">
+            <div class="popup-handle"></div>
             <h4>📖 Définition</h4>
             <p>${definition}</p>
             <button class="close-popup-btn">Fermer</button>
@@ -49,12 +78,39 @@ function showDefinition(definition) {
     
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
+    let currentY = 0;
     
     overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
     
-    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; e.stopPropagation(); });
-    popupBox.addEventListener('touchmove', (e) => { if (e.touches[0].clientY - startY > 60) overlay.remove(); e.stopPropagation(); });
+    // Swipe vers le bas avec suivi du doigt
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        popupBox.style.transition = 'none';
+        e.stopPropagation();
+    });
+    
+    popupBox.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const moveY = currentY - startY;
+        if (moveY > 0) {
+            popupBox.style.transform = `translateY(${moveY}px)`;
+            popupBox.style.opacity = `${1 - moveY / 300}`;
+        }
+        e.stopPropagation();
+    });
+    
+    popupBox.addEventListener('touchend', (e) => {
+        const moveY = currentY - startY;
+        popupBox.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        if (moveY > 100) {
+            overlay.remove();
+        } else {
+            popupBox.style.transform = 'translateY(0)';
+            popupBox.style.opacity = '1';
+        }
+        e.stopPropagation();
+    });
 }
 
 function updateStreak() {
@@ -115,7 +171,7 @@ function showHistory() {
     const list = FACTS.filter(f => learnedFacts.includes(f.id));
     document.getElementById('historyList').innerHTML = list.length === 0 ? 
         '<div class="empty-state">📭 Aucun fait appris</div>' : 
-        list.reverse().map(f => `
+        list.slice().reverse().map(f => `
             <div class="history-item" onclick="window.showFactDetail(${f.id})">
                 <h3>${f.title}</h3>
                 <p>${f.text.substring(0, 70)}...</p>
@@ -129,6 +185,7 @@ function showStats() {
     currentView = 'stats';
     updateActiveMenu();
     const progress = Math.round((learnedFacts.length / FACTS.length) * 100);
+    const uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
     document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
             <div class="stats-number">${learnedFacts.length}</div>
@@ -136,8 +193,12 @@ function showStats() {
             <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
         </div>
         <div class="stats-card">
-            <div class="stats-number">${new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category)).size}</div>
+            <div class="stats-number">${uniqueCategories.size}</div>
             <div style="color:#94a3b8">catégories explorées</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${FACTS.length}</div>
+            <div style="color:#94a3b8">faits disponibles</div>
         </div>
     `;
     document.getElementById('statsView').classList.add('open');
@@ -182,7 +243,10 @@ function onGlobalTouchEnd(e) {
     }
 }
 
-window.showFactDetail = (id) => showPopup(FACTS.find(f => f.id === id).title, FACTS.find(f => f.id === id).moreInfo);
+window.showFactDetail = (id) => {
+    const fact = FACTS.find(f => f.id === id);
+    if (fact) showPopup(fact.title, fact.moreInfo || fact.text);
+};
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 
