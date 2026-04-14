@@ -115,7 +115,7 @@ function showHistory() {
     const list = FACTS.filter(f => learnedFacts.includes(f.id));
     document.getElementById('historyList').innerHTML = list.length === 0 ? 
         '<div class="empty-state">📭 Aucun fait appris</div>' : 
-        list.reverse().map(f => `
+        list.slice().reverse().map(f => `
             <div class="history-item" onclick="window.showFactDetail(${f.id})">
                 <h3>${f.title}</h3>
                 <p>${f.text.substring(0, 70)}...</p>
@@ -129,6 +129,7 @@ function showStats() {
     currentView = 'stats';
     updateActiveMenu();
     const progress = Math.round((learnedFacts.length / FACTS.length) * 100);
+    const uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
     document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
             <div class="stats-number">${learnedFacts.length}</div>
@@ -136,8 +137,12 @@ function showStats() {
             <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
         </div>
         <div class="stats-card">
-            <div class="stats-number">${new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category)).size}</div>
+            <div class="stats-number">${uniqueCategories.size}</div>
             <div style="color:#94a3b8">catégories explorées</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${FACTS.length}</div>
+            <div style="color:#94a3b8">faits disponibles</div>
         </div>
     `;
     document.getElementById('statsView').classList.add('open');
@@ -182,7 +187,10 @@ function onGlobalTouchEnd(e) {
     }
 }
 
-window.showFactDetail = (id) => showPopup(FACTS.find(f => f.id === id).title, FACTS.find(f => f.id === id).moreInfo);
+window.showFactDetail = (id) => {
+    const fact = FACTS.find(f => f.id === id);
+    if (fact) showPopup(fact.title, fact.moreInfo || fact.text);
+};
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 
