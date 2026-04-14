@@ -15,6 +15,8 @@ body, html {
     color: var(--text);
 }
 .app-container {
+    overflow: hidden;
+    position: relative;
     height: 100%; display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top);
 }
@@ -27,7 +29,10 @@ header {
     border-radius: 20px; font-size: 0.9rem;
 }
 .card-container { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+    overflow: hidden;
 .card {
+    position: absolute;
+    will-change: transform;
     width: 90%; max-width: 380px; background: var(--card); backdrop-filter: blur(15px);
     border-radius: 32px; padding: 30px; border: 1px solid rgba(255,255,255,0.1);
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); text-align: center;
