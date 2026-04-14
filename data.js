@@ -1,32 +1,27 @@
-export const CATEGORIES = {
-    ALL: "Tout",
-    TECH: "Technologie",
-    HIST: "Histoire",
-    SCI: "Science",
-    NAT: "Nature",
-    INS: "Insolite"
-};
-
 export const FACTS = [
   {
     id: 1,
     dayOfYear: 101,
-    category: CATEGORIES.TECH,
     title: "Le Bluetooth",
     text: "Le nom Bluetooth vient d'un roi viking nommé Harald à la dent bleue.",
-    moreInfo: "Détails sur Harald Blåtand...",
+    moreInfo: "Harald Blåtand était célèbre pour avoir uni des tribus scandinaves. Les inventeurs ont choisi ce nom car le Bluetooth unit les appareils. Le logo est la combinaison des runes H et B.",
+    category: "Technologie",
     difficulty: 1,
-    hardWords: [{ word: "viking", definition: "Guerrier scandinave." }]
+    hardWords: [
+      { word: "viking", definition: "Explorateur et guerrier scandinave du Moyen Âge." }
+    ]
   },
   {
     id: 2,
     dayOfYear: 102,
-    category: CATEGORIES.SCI,
     title: "Pluie de diamants",
     text: "Sur Neptune et Uranus, il pleut littéralement des diamants.",
-    moreInfo: "Pression atmosphérique extrême...",
+    moreInfo: "Sous l'effet de la pression extrême, le méthane se transforme en diamants qui tombent vers le centre des planètes. Des millions de carats par an !",
+    category: "Espace",
     difficulty: 2,
-    hardWords: [{ word: "littéralement", definition: "Au sens propre." }]
+    hardWords: [
+      { word: "littéralement", definition: "Au sens propre, sans exagération." },
+      { word: "méthane", definition: "Gaz naturel, composé de carbone et d'hydrogène." }
+    ]
   }
-  // Ajoute tes 10 faits ici en utilisant CATEGORIES.NOM
 ];
