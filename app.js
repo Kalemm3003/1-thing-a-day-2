@@ -7,47 +7,76 @@ let currentView = 'daily';
 
 const card = document.getElementById('card');
 
-// ==================== POPUPS ====================
-function showPopup(title, content) {
-    let oldPopup = document.querySelector('.info-popup, .definition-popup');
-    if (oldPopup) oldPopup.remove();
-
-    let popup = document.createElement('div');
-    popup.className = 'info-popup';
-    popup.innerHTML = `
-        <h4>${title}</h4>
-        <p>${content}</p>
-        <button>Fermer</button>
-    `;
-    document.body.appendChild(popup);
-
-    popup.querySelector('button').onclick = () => popup.remove();
-    popup.addEventListener('click', (e) => {
-        if (e.target === popup || e.target === popup.querySelector('button')) {
-            popup.remove();
-        }
-    });
+// ==================== GESTION DES POPUPS ====================
+function closeAllPopups() {
+    const popup = document.querySelector('.info-popup, .definition-popup');
+    const overlay = document.querySelector('.popup-overlay');
+    if (popup) popup.remove();
+    if (overlay) overlay.remove();
 }
 
-function showDefinition(definition) {
-    let oldPopup = document.querySelector('.definition-popup, .info-popup');
-    if (oldPopup) oldPopup.remove();
+function createPopup(title, content) {
+    closeAllPopups();
 
-    let popup = document.createElement('div');
-    popup.className = 'definition-popup';
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    document.body.appendChild(overlay);
+
+    const popup = document.createElement('div');
+    popup.className = 'info-popup';
     popup.innerHTML = `
-        <h4>📖 Définition</h4>
-        <p>${definition}</p>
-        <button>Fermer</button>
+        <div style="width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: -10px auto 15px auto;"></div>
+        <h4>${title}</h4>
+        <p>${content}</p>
+        <button id="popupCloseBtn">Fermer</button>
     `;
     document.body.appendChild(popup);
 
-    popup.querySelector('button').onclick = () => popup.remove();
-    popup.addEventListener('click', (e) => {
-        if (e.target === popup || e.target === popup.querySelector('button')) {
-            popup.remove();
+    // 1. Fermer via bouton
+    popup.querySelector('#popupCloseBtn').onclick = closeAllPopups;
+
+    // 2. Fermer via clic extérieur (overlay)
+    overlay.onclick = closeAllPopups;
+
+    // 3. Fermer via swipe vers le bas
+    let touchY = 0;
+    popup.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, {passive: true});
+    popup.addEventListener('touchmove', e => {
+        const moveY = e.touches[0].clientY - touchY;
+        if (moveY > 0) {
+            popup.style.transform = `translateY(${moveY}px)`;
         }
-    });
+    }, {passive: true});
+    popup.addEventListener('touchend', e => {
+        const diffY = e.changedTouches[0].clientY - touchY;
+        if (diffY > 100) {
+            closeAllPopups();
+        } else {
+            popup.style.transform = 'translateY(0)';
+        }
+    }, {passive: true});
+}
+
+// ==================== SWIPE RETOUR GLOBAL ====================
+let globalStartX = 0;
+document.addEventListener('touchstart', e => {
+    globalStartX = e.touches[0].clientX;
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+    const diffX = e.changedTouches[0].clientX - globalStartX;
+    
+    // Si on est dans une vue secondaire et qu'on swipe de gauche à droite
+    if (currentView !== 'daily' && diffX > 80) {
+        closeHistory();
+        closeStats();
+    }
+}, {passive: true});
+
+// ==================== LOGIQUE APP ====================
+function updateStreak() {
+    const streakElem = document.getElementById('streak');
+    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
 }
 
 function showToast(msg) {
@@ -58,60 +87,13 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 2000);
 }
 
-// ==================== STREAK ====================
-function updateStreak() {
-    let streakElem = document.getElementById('streak');
-    if (streakElem) {
-        let count = learnedFacts.length;
-        streakElem.innerHTML = `🔥 ${count} appris`;
-    }
-}
-updateStreak();
-
-// ==================== FAIT DU JOUR ====================
-function getDailyFact() {
-    const today = new Date();
-    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-
-    let dailyFact = FACTS.find(f => f.dayOfYear === dayOfYear);
-    if (!dailyFact) {
-        dailyFact = FACTS[0];
-    }
-    return dailyFact;
-}
-
-// ==================== PROCHAIN FAIT ====================
-function getNextUnlearnedFact() {
-    let availableFacts = FACTS.filter(f => !learnedFacts.includes(f.id));
-
-    if (availableFacts.length === 0) {
-        showToast('🏆 Félicitations ! Tu as tout appris !');
-        return FACTS[Math.floor(Math.random() * FACTS.length)];
-    }
-    return availableFacts[Math.floor(Math.random() * availableFacts.length)];
-}
-
-// ==================== MARQUER COMME APPRIS ====================
-function markAsLearned(id) {
-    if (!learnedFacts.includes(id)) {
-        learnedFacts.push(id);
-        localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
-        updateStreak();
-        showToast('✅ Appris !');
-        return true;
-    }
-    return false;
-}
-
-// ==================== RENDER FACT ====================
 function renderFact(fact) {
     currentFact = fact;
-
     let text = fact.text;
     if (fact.hardWords) {
         fact.hardWords.forEach(hw => {
             const regex = new RegExp(`(${hw.word})`, 'gi');
-            text = text.replace(regex, `<span class="hard-word" data-def="${hw.definition.replace(/"/g, '&quot;')}">$1</span>`);
+            text = text.replace(regex, `<span class="hard-word" data-def="${hw.definition}">$1</span>`);
         });
     }
 
@@ -123,49 +105,37 @@ function renderFact(fact) {
     `;
 
     card.querySelectorAll('.hard-word').forEach(el => {
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            let def = el.dataset.def;
-            if (def) showDefinition(def);
-        });
+        el.onclick = (e) => { e.stopPropagation(); createPopup('📖 Définition', el.dataset.def); };
     });
 
-    card.querySelector('.more-btn').addEventListener('click', () => {
-        showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
-    });
+    card.querySelector('.more-btn').onclick = () => createPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
 
     card.style.transform = 'translateX(0) rotate(0)';
     card.style.opacity = '1';
 }
 
-// ==================== CHARGEMENT INITIAL ====================
-function loadFactOfDay() {
-    const dailyFact = getDailyFact();
-    renderFact(dailyFact);
-}
-
-// ==================== SWIPE PROGRESSIF ====================
 function setupGestures() {
-    card.addEventListener('touchstart', e => {
-        startX = e.touches[0].clientX;
-        card.style.transition = 'none';
-    });
-
+    card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; card.style.transition = 'none'; });
     card.addEventListener('touchmove', e => {
         const move = e.touches[0].clientX - startX;
         card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
         card.style.opacity = `${1 - Math.abs(move) / 500}`;
     });
-
     card.addEventListener('touchend', e => {
         const diff = e.changedTouches[0].clientX - startX;
-        card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-        
+        card.style.transition = 'all 0.3s ease';
         if (Math.abs(diff) > 100) {
-            if (diff > 0) {
-                markAsLearned(currentFact.id);
+            if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
+                learnedFacts.push(currentFact.id);
+                localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
+                updateStreak();
+                showToast('✅ Appris !');
             }
-            nextFact();
+            card.style.opacity = '0';
+            setTimeout(() => {
+                const pool = FACTS.filter(f => !learnedFacts.includes(f.id));
+                renderFact(pool.length > 0 ? pool[Math.floor(Math.random()*pool.length)] : FACTS[0]);
+            }, 300);
         } else {
             card.style.transform = 'translateX(0) rotate(0)';
             card.style.opacity = '1';
@@ -173,57 +143,20 @@ function setupGestures() {
     });
 }
 
-function nextFact() {
-    card.style.opacity = '0';
-    setTimeout(() => {
-        const next = getNextUnlearnedFact();
-        renderFact(next);
-    }, 300);
-}
-
-// ==================== HISTORIQUE ====================
+// ==================== NAVIGATION ====================
 function showHistory() {
     currentView = 'history';
     updateActiveMenu();
-
-    let historyList = document.getElementById('historyList');
-    let learnedFactsList = FACTS.filter(f => learnedFacts.includes(f.id));
-
-    if (learnedFactsList.length === 0) {
-        historyList.innerHTML = '<div class="empty-state">📭 Aucun fait appris<br>Swipe à droite pour apprendre !</div>';
-    } else {
-        historyList.innerHTML = learnedFactsList.slice().reverse().map(f =>
-            `<div class="history-item" onclick="window.showFactDetail(${f.id})">
-                <h3>${f.title}</h3>
-                <p>${f.text.substring(0, 80)}...</p>
-                <small>📂 ${f.category}</small>
-            </div>`
-        ).join('');
-    }
+    const list = FACTS.filter(f => learnedFacts.includes(f.id));
+    document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait appris</div>' : 
+        list.reverse().map(f => `<div class="history-item"><h3>${f.title}</h3><p>${f.category}</p></div>`).join('');
     document.getElementById('historyView').classList.add('open');
-    enableSwipeBack();
 }
 
-function showFactDetail(factId) {
-    let fact = FACTS.find(f => f.id === factId);
-    if (fact) {
-        showPopup(fact.title, fact.moreInfo || fact.text);
-    }
-}
-
-function closeHistory() {
-    document.getElementById('historyView').classList.remove('open');
-    disableSwipeBack();
-}
-
-// ==================== STATS ====================
 function showStats() {
     currentView = 'stats';
     updateActiveMenu();
-
-    let uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
     let progress = Math.round((learnedFacts.length / FACTS.length) * 100);
-
     document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
             <div class="stats-number">${learnedFacts.length}</div>
@@ -232,345 +165,27 @@ function showStats() {
                 <div style="width:${progress}%;background:#60a5fa;height:100%;border-radius:10px;"></div>
             </div>
         </div>
-        <div class="stats-card"><div class="stats-number">${uniqueCategories.size}</div><div>catégories explorées</div></div>
-        <div class="stats-card"><div class="stats-number">${FACTS.length}</div><div>faits disponibles</div></div>
     `;
     document.getElementById('statsView').classList.add('open');
-    enableSwipeBack();
 }
 
-function closeStats() {
-    document.getElementById('statsView').classList.remove('open');
-    disableSwipeBack();
-}
-
-// ==================== SWIPE POUR REVENIR ====================
-let swipeBackStartX = 0;
-let swipeBackArea = null;
-
-function enableSwipeBack() {
-    if (!swipeBackArea) {
-        swipeBackArea = document.createElement('div');
-        swipeBackArea.className = 'swipe-back-area';
-        document.body.appendChild(swipeBackArea);
-    }
-    swipeBackArea.classList.add('active');
-    swipeBackArea.addEventListener('touchstart', onSwipeBackStart);
-    swipeBackArea.addEventListener('touchend', onSwipeBackEnd);
-}
-
-function disableSwipeBack() {
-    if (swipeBackArea) {
-        swipeBackArea.classList.remove('active');
-        swipeBackArea.removeEventListener('touchstart', onSwipeBackStart);
-        swipeBackArea.removeEventListener('touchend', onSwipeBackEnd);
-    }
-}
-
-function onSwipeBackStart(e) {
-    swipeBackStartX = e.touches[0].clientX;
-}
-
-function onSwipeBackEnd(e) {
-    const endX = e.changedTouches[0].clientX;
-    const deltaX = endX - swipeBackStartX;
-
-    if (deltaX > 50) {
-        if (document.getElementById('historyView').classList.contains('open')) {
-            closeHistory();
-        } else if (document.getElementById('statsView').classList.contains('open')) {
-            closeStats();
-        }
-    }
-}
-
-// ==================== DAILY ====================
-function showDaily() {
-    currentView = 'daily';
-    updateActiveMenu();
-    loadFactOfDay();
-}
+function closeHistory() { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); }
+function closeStats() { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); }
 
 function updateActiveMenu() {
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
+    document.querySelectorAll('.nav-item').forEach((item, i) => {
+        item.classList.toggle('active', (i === 0 && currentView === 'daily') || (i === 1 && currentView === 'history') || (i === 2 && currentView === 'stats'));
     });
-    if (currentView === 'daily') document.querySelectorAll('.nav-item')[0].classList.add('active');
-    if (currentView === 'history') document.querySelectorAll('.nav-item')[1].classList.add('active');
-    if (currentView === 'stats') document.querySelectorAll('.nav-item')[2].classList.add('active');
 }
 
-// ==================== NAVIGATION ====================
-document.querySelectorAll('.nav-item').forEach((item, index) => {
-    item.addEventListener('click', () => {
-        if (index === 0) showDaily();
-        if (index === 1) showHistory();
-        if (index === 2) showStats();
-    });
-});
+document.querySelectorAll('.nav-item')[0].onclick = () => { closeHistory(); closeStats(); };
+document.querySelectorAll('.nav-item')[1].onclick = showHistory;
+document.querySelectorAll('.nav-item')[2].onclick = showStats;
 
-// ==================== INIT ====================
-function init() {
-    loadFactOfDay();
-    setupGestures();
-    updateStreak();
-}
-
-window.showFactDetail = showFactDetail;
 window.closeHistory = closeHistory;
 window.closeStats = closeStats;
-window.showDefinition = showDefinition;
-window.showPopup = showPopup;
 
-init();
-
-// ==================== DÉSACTIVER DOUBLE-CLIC ZOOM ====================
-document.addEventListener('touchstart', (e) => {
-    if (e.touches.length > 1) {
-        e.preventDefault();
-    }
-}, { passive: false });
-
-document.addEventListener('gesturestart', (e) => {
-    e.preventDefault();
-});
-
-// ==================== SWIPE POUR REVENIR (depuis n'importe où) ====================
-let swipeStartX = 0;
-let isSwipingBack = false;
-
-function enableSwipeBack() {
-    document.addEventListener('touchstart', onGlobalSwipeStart);
-    document.addEventListener('touchend', onGlobalSwipeEnd);
-}
-
-function disableSwipeBack() {
-    document.removeEventListener('touchstart', onGlobalSwipeStart);
-    document.removeEventListener('touchend', onGlobalSwipeEnd);
-}
-
-function onGlobalSwipeStart(e) {
-    swipeStartX = e.touches[0].clientX;
-    isSwipingBack = true;
-}
-
-function onGlobalSwipeEnd(e) {
-    if (!isSwipingBack) return;
-    isSwipingBack = false;
-    
-    const endX = e.changedTouches[0].clientX;
-    const deltaX = endX - swipeStartX;
-    
-    // Swipe gauche → droite (deltaX > 50) depuis n'importe où
-    if (deltaX > 50) {
-        if (document.getElementById('historyView').classList.contains('open')) {
-            closeHistory();
-        } else if (document.getElementById('statsView').classList.contains('open')) {
-            closeStats();
-        }
-    }
-}
-
-// ==================== POPUPS MODIFIÉES ====================
-function showPopup(title, content) {
-    let oldPopup = document.querySelector('.info-popup, .definition-popup');
-    if (oldPopup) oldPopup.remove();
-
-    let popup = document.createElement('div');
-    popup.className = 'info-popup';
-    popup.innerHTML = `
-        <div class="popup-content">
-            <h4>${title}</h4>
-            <p>${content}</p>
-            <button>Fermer</button>
-        </div>
-    `;
-    document.body.appendChild(popup);
-    
-    let startY = 0;
-    
-    // Fermer avec le bouton
-    popup.querySelector('button').onclick = () => popup.remove();
-    
-    // Fermer en cliquant sur l'arrière-plan (fond)
-    popup.addEventListener('click', (e) => {
-        if (e.target === popup) {
-            popup.remove();
-        }
-    });
-    
-    // Fermer par swipe vers le bas
-    popup.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-    });
-    
-    popup.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 60) {
-            popup.remove();
-        }
-    });
-}
-
-function showDefinition(definition) {
-    let oldPopup = document.querySelector('.definition-popup, .info-popup');
-    if (oldPopup) oldPopup.remove();
-
-    let popup = document.createElement('div');
-    popup.className = 'definition-popup';
-    popup.innerHTML = `
-        <div class="popup-content">
-            <h4>📖 Définition</h4>
-            <p>${definition}</p>
-            <button>Fermer</button>
-        </div>
-    `;
-    document.body.appendChild(popup);
-    
-    let startY = 0;
-    
-    // Fermer avec le bouton
-    popup.querySelector('button').onclick = () => popup.remove();
-    
-    // Fermer en cliquant sur l'arrière-plan (fond)
-    popup.addEventListener('click', (e) => {
-        if (e.target === popup) {
-            popup.remove();
-        }
-    });
-    
-    // Fermer par swipe vers le bas
-    popup.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-    });
-    
-    popup.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 60) {
-            popup.remove();
-        }
-    });
-}
-
-// ==================== POPUPS CORRIGÉES ====================
-function showPopup(title, content) {
-    let oldPopup = document.querySelector('.info-popup, .definition-popup');
-    if (oldPopup) oldPopup.remove();
-
-    let overlay = document.createElement('div');
-    overlay.className = 'info-popup';
-    overlay.innerHTML = `
-        <div class="popup-box">
-            <h4>${title}</h4>
-            <p>${content}</p>
-            <button class="close-popup-btn">Fermer</button>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    
-    let popupBox = overlay.querySelector('.popup-box');
-    let startY = 0;
-    
-    // Fermer avec le bouton
-    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
-    
-    // Fermer en cliquant sur l'overlay (à l'extérieur de la popup)
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            overlay.remove();
-        }
-    });
-    
-    // Fermer par swipe vers le bas sur la popup
-    popupBox.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        e.stopPropagation();
-    });
-    
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 60) {
-            overlay.remove();
-        }
-        e.stopPropagation();
-    });
-}
-
-function showDefinition(definition) {
-    let oldPopup = document.querySelector('.definition-popup, .info-popup');
-    if (oldPopup) oldPopup.remove();
-
-    let overlay = document.createElement('div');
-    overlay.className = 'definition-popup';
-    overlay.innerHTML = `
-        <div class="popup-box">
-            <h4>📖 Définition</h4>
-            <p>${definition}</p>
-            <button class="close-popup-btn">Fermer</button>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    
-    let popupBox = overlay.querySelector('.popup-box');
-    let startY = 0;
-    
-    // Fermer avec le bouton
-    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
-    
-    // Fermer en cliquant sur l'overlay (à l'extérieur de la popup)
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            overlay.remove();
-        }
-    });
-    
-    // Fermer par swipe vers le bas sur la popup
-    popupBox.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        e.stopPropagation();
-    });
-    
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 60) {
-            overlay.remove();
-        }
-        e.stopPropagation();
-    });
-}
-
-// ==================== SWIPE RETOUR (depuis n'importe où sur l'écran) ====================
-let globalStartX = 0;
-let isGlobalSwiping = false;
-
-function enableSwipeBack() {
-    document.addEventListener('touchstart', onGlobalTouchStart);
-    document.addEventListener('touchend', onGlobalTouchEnd);
-}
-
-function disableSwipeBack() {
-    document.removeEventListener('touchstart', onGlobalTouchStart);
-    document.removeEventListener('touchend', onGlobalTouchEnd);
-}
-
-function onGlobalTouchStart(e) {
-    globalStartX = e.touches[0].clientX;
-    isGlobalSwiping = true;
-}
-
-function onGlobalTouchEnd(e) {
-    if (!isGlobalSwiping) return;
-    isGlobalSwiping = false;
-    
-    const endX = e.changedTouches[0].clientX;
-    const deltaX = endX - globalStartX;
-    
-    // N'importe quel swipe vers la droite (deltaX > 60)
-    if (deltaX > 60) {
-        if (document.getElementById('historyView').classList.contains('open')) {
-            closeHistory();
-        } else if (document.getElementById('statsView').classList.contains('open')) {
-            closeStats();
-        }
-    }
-}
+// INIT
+renderFact(FACTS[0]);
+setupGestures();
+updateStreak();
