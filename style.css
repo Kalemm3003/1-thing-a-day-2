@@ -268,18 +268,6 @@ header {
 }
 
 /* Zone de swipe pour revenir en arrière */
-.swipe-back-area {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 20%;
-    height: 100%;
-    z-index: 250;
-    pointer-events: none;
-}
-
-.swipe-back-area.active {
-    pointer-events: auto;
 }
 
 /* Bloquer le double-clic zoom sur iPhone */

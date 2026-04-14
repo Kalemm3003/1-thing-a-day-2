@@ -334,3 +334,120 @@ document.addEventListener('touchstart', (e) => {
 document.addEventListener('gesturestart', (e) => {
     e.preventDefault();
 });
+
+// ==================== SWIPE POUR REVENIR (depuis n'importe où) ====================
+let swipeStartX = 0;
+let isSwipingBack = false;
+
+function enableSwipeBack() {
+    document.addEventListener('touchstart', onGlobalSwipeStart);
+    document.addEventListener('touchend', onGlobalSwipeEnd);
+}
+
+function disableSwipeBack() {
+    document.removeEventListener('touchstart', onGlobalSwipeStart);
+    document.removeEventListener('touchend', onGlobalSwipeEnd);
+}
+
+function onGlobalSwipeStart(e) {
+    swipeStartX = e.touches[0].clientX;
+    isSwipingBack = true;
+}
+
+function onGlobalSwipeEnd(e) {
+    if (!isSwipingBack) return;
+    isSwipingBack = false;
+    
+    const endX = e.changedTouches[0].clientX;
+    const deltaX = endX - swipeStartX;
+    
+    // Swipe gauche → droite (deltaX > 50) depuis n'importe où
+    if (deltaX > 50) {
+        if (document.getElementById('historyView').classList.contains('open')) {
+            closeHistory();
+        } else if (document.getElementById('statsView').classList.contains('open')) {
+            closeStats();
+        }
+    }
+}
+
+// ==================== POPUPS MODIFIÉES ====================
+function showPopup(title, content) {
+    let oldPopup = document.querySelector('.info-popup, .definition-popup');
+    if (oldPopup) oldPopup.remove();
+
+    let popup = document.createElement('div');
+    popup.className = 'info-popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h4>${title}</h4>
+            <p>${content}</p>
+            <button>Fermer</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+    
+    let startY = 0;
+    
+    // Fermer avec le bouton
+    popup.querySelector('button').onclick = () => popup.remove();
+    
+    // Fermer en cliquant sur l'arrière-plan (fond)
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            popup.remove();
+        }
+    });
+    
+    // Fermer par swipe vers le bas
+    popup.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    });
+    
+    popup.addEventListener('touchmove', (e) => {
+        const moveY = e.touches[0].clientY - startY;
+        if (moveY > 60) {
+            popup.remove();
+        }
+    });
+}
+
+function showDefinition(definition) {
+    let oldPopup = document.querySelector('.definition-popup, .info-popup');
+    if (oldPopup) oldPopup.remove();
+
+    let popup = document.createElement('div');
+    popup.className = 'definition-popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h4>📖 Définition</h4>
+            <p>${definition}</p>
+            <button>Fermer</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+    
+    let startY = 0;
+    
+    // Fermer avec le bouton
+    popup.querySelector('button').onclick = () => popup.remove();
+    
+    // Fermer en cliquant sur l'arrière-plan (fond)
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            popup.remove();
+        }
+    });
+    
+    // Fermer par swipe vers le bas
+    popup.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    });
+    
+    popup.addEventListener('touchmove', (e) => {
+        const moveY = e.touches[0].clientY - startY;
+        if (moveY > 60) {
+            popup.remove();
+        }
+    });
+}
