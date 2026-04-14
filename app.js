@@ -185,7 +185,29 @@ function renderFact(fact) {
 }
 
 function setupGestures() {
-    card.ontouchstart = e => { startX = e.touches[0].clientX; card.style.transition = 'none'; };
+    card.ontouchstart = e => { startX = e.touches[0].clientX; card.style.transition = "none"; };
+    card.ontouchmove = e => {
+        const move = e.touches[0].clientX - startX;
+        card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
+        card.style.opacity = `${1 - Math.abs(move) / 500}`;
+    };
+    card.ontouchend = e => {
+        const diff = e.changedTouches[0].clientX - startX;
+        card.style.transition = "all 0.3s ease";
+        if (Math.abs(diff) > 100) {
+            if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
+                learnedFacts.push(currentFact.id);
+                localStorage.setItem("learnedFacts", JSON.stringify(learnedFacts));
+                updateStreak();
+                showToast("✅ Appris !");
+            }
+            renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]);
+        } else {
+            card.style.transform = "translateX(0) rotate(0)";
+            card.style.opacity = "1";
+        }
+    };
+}
     card.ontouchmove = e => {
         const move = e.touches[0].clientX - startX;
         card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
