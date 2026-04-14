@@ -7,34 +7,61 @@ let currentView = 'daily';
 
 const card = document.getElementById('card');
 
-// ==================== POPUPS D'ORIGINE ====================
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
-    let popup = document.createElement('div');
-    popup.className = 'info-popup';
-    popup.innerHTML = `<h4>${title}</h4><p>${content}</p><button>Fermer</button>`;
-    document.body.appendChild(popup);
     
-    const close = () => popup.remove();
-    popup.querySelector('button').onclick = close;
-    popup.onclick = (e) => { if(e.target === popup) close(); };
+    let overlay = document.createElement('div');
+    overlay.className = 'info-popup';
+    overlay.innerHTML = `
+        <div class="popup-box">
+            <h4>${title}</h4>
+            <p>${content}</p>
+            <button class="close-popup-btn">Fermer</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    let popupBox = overlay.querySelector('.popup-box');
+    let startY = 0;
+    
+    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    
+    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; e.stopPropagation(); });
+    popupBox.addEventListener('touchmove', (e) => { if (e.touches[0].clientY - startY > 60) overlay.remove(); e.stopPropagation(); });
 }
 
 function showDefinition(definition) {
     let oldPopup = document.querySelector('.definition-popup, .info-popup');
     if (oldPopup) oldPopup.remove();
-    let popup = document.createElement('div');
-    popup.className = 'definition-popup';
-    popup.innerHTML = `<h4>📖 Définition</h4><p>${definition}</p><button>Fermer</button>`;
-    document.body.appendChild(popup);
     
-    const close = () => popup.remove();
-    popup.querySelector('button').onclick = close;
-    popup.onclick = (e) => { if(e.target === popup) close(); };
+    let overlay = document.createElement('div');
+    overlay.className = 'definition-popup';
+    overlay.innerHTML = `
+        <div class="popup-box">
+            <h4>📖 Définition</h4>
+            <p>${definition}</p>
+            <button class="close-popup-btn">Fermer</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    let popupBox = overlay.querySelector('.popup-box');
+    let startY = 0;
+    
+    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    
+    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; e.stopPropagation(); });
+    popupBox.addEventListener('touchmove', (e) => { if (e.touches[0].clientY - startY > 60) overlay.remove(); e.stopPropagation(); });
 }
 
-// ==================== COEUR DE L'APP ====================
+function updateStreak() {
+    let streakElem = document.getElementById('streak');
+    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
+}
+
 function renderFact(fact) {
     currentFact = fact;
     let text = fact.text;
@@ -82,7 +109,6 @@ function setupGestures() {
     };
 }
 
-// ==================== HISTORIQUE & STATS ====================
 function showHistory() {
     currentView = 'history';
     updateActiveMenu();
@@ -90,12 +116,13 @@ function showHistory() {
     document.getElementById('historyList').innerHTML = list.length === 0 ? 
         '<div class="empty-state">📭 Aucun fait appris</div>' : 
         list.reverse().map(f => `
-            <div class="history-item">
+            <div class="history-item" onclick="window.showFactDetail(${f.id})">
                 <h3>${f.title}</h3>
                 <p>${f.text.substring(0, 70)}...</p>
                 <small>📂 ${f.category}</small>
             </div>`).join('');
     document.getElementById('historyView').classList.add('open');
+    enableSwipeBack();
 }
 
 function showStats() {
@@ -114,16 +141,8 @@ function showStats() {
         </div>
     `;
     document.getElementById('statsView').classList.add('open');
+    enableSwipeBack();
 }
-
-// ==================== NAV & SWIPE BACK ====================
-let swipeStartX = 0;
-document.addEventListener('touchstart', e => swipeStartX = e.touches[0].clientX);
-document.addEventListener('touchend', e => {
-    if (currentView !== 'daily' && (e.changedTouches[0].clientX - swipeStartX > 80)) {
-        closeHistory(); closeStats();
-    }
-});
 
 function updateActiveMenu() {
     document.querySelectorAll('.nav-item').forEach((item, i) => {
@@ -131,100 +150,6 @@ function updateActiveMenu() {
     });
 }
 
-function updateStreak() {
-    const streakElem = document.getElementById('streak');
-    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
-}
-
-window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); };
-window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); };
-
-document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(); window.closeStats(); };
-document.querySelectorAll('.nav-item')[1].onclick = showHistory;
-document.querySelectorAll('.nav-item')[2].onclick = showStats;
-
-renderFact(FACTS[0]);
-setupGestures();
-updateStreak();
-
-// ==================== AMÉLIORATIONS POPUPS ====================
-// Remplacer les fonctions showPopup et showDefinition
-function showPopup(title, content) {
-    let oldPopup = document.querySelector('.info-popup, .definition-popup');
-    if (oldPopup) oldPopup.remove();
-    
-    let overlay = document.createElement('div');
-    overlay.className = 'info-popup';
-    overlay.innerHTML = `
-        <div class="popup-box">
-            <h4>${title}</h4>
-            <p>${content}</p>
-            <button class="close-popup-btn">Fermer</button>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    
-    let popupBox = overlay.querySelector('.popup-box');
-    let startY = 0;
-    
-    // Fermer avec le bouton
-    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
-    
-    // Fermer en cliquant sur l'overlay (à l'extérieur de la popup)
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.remove();
-    });
-    
-    // Fermer par swipe vers le bas
-    popupBox.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        e.stopPropagation();
-    });
-    
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 60) overlay.remove();
-        e.stopPropagation();
-    });
-}
-
-function showDefinition(definition) {
-    let oldPopup = document.querySelector('.definition-popup, .info-popup');
-    if (oldPopup) oldPopup.remove();
-    
-    let overlay = document.createElement('div');
-    overlay.className = 'definition-popup';
-    overlay.innerHTML = `
-        <div class="popup-box">
-            <h4>📖 Définition</h4>
-            <p>${definition}</p>
-            <button class="close-popup-btn">Fermer</button>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    
-    let popupBox = overlay.querySelector('.popup-box');
-    let startY = 0;
-    
-    overlay.querySelector('.close-popup-btn').onclick = () => overlay.remove();
-    
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.remove();
-    });
-    
-    popupBox.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        e.stopPropagation();
-    });
-    
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 60) overlay.remove();
-        e.stopPropagation();
-    });
-}
-
-// ==================== SWIPE RETOUR AMÉLIORÉ ====================
 let globalStartX = 0;
 let isSwipingBack = false;
 
@@ -246,11 +171,8 @@ function onGlobalTouchStart(e) {
 function onGlobalTouchEnd(e) {
     if (!isSwipingBack) return;
     isSwipingBack = false;
-    
     const endX = e.changedTouches[0].clientX;
     const deltaX = endX - globalStartX;
-    
-    // N'importe quel swipe vers la droite (deltaX > 60)
     if (deltaX > 60) {
         if (document.getElementById('historyView').classList.contains('open')) {
             closeHistory();
@@ -260,30 +182,14 @@ function onGlobalTouchEnd(e) {
     }
 }
 
-// Remplacer les anciennes fonctions closeHistory et closeStats pour désactiver le swipe retour
-window.closeHistory = () => { 
-    document.getElementById('historyView').classList.remove('open'); 
-    currentView = 'daily'; 
-    updateActiveMenu(); 
-    disableSwipeBack();
-};
-window.closeStats = () => { 
-    document.getElementById('statsView').classList.remove('open'); 
-    currentView = 'daily'; 
-    updateActiveMenu(); 
-    disableSwipeBack();
-};
+window.showFactDetail = (id) => showPopup(FACTS.find(f => f.id === id).title, FACTS.find(f => f.id === id).moreInfo);
+window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
+window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 
-// Modifier showHistory et showStats pour activer le swipe retour
-const originalShowHistory = showHistory;
-const originalShowStats = showStats;
+document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(); window.closeStats(); };
+document.querySelectorAll('.nav-item')[1].onclick = showHistory;
+document.querySelectorAll('.nav-item')[2].onclick = showStats;
 
-showHistory = () => {
-    originalShowHistory();
-    enableSwipeBack();
-};
-
-showStats = () => {
-    originalShowStats();
-    enableSwipeBack();
-};
+renderFact(FACTS[0]);
+setupGestures();
+updateStreak();
