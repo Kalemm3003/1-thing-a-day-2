@@ -179,13 +179,28 @@ function showHistory() {
 }
 
 function showStats() {
-    currentView = 'stats';
+    currentView = "stats";
     updateActiveMenu();
-    const progress = Math.round((learnedFacts.length / FACTS.length) * 100);
+    const progress = Math.min(100, Math.round((learnedFacts.length / FACTS.length) * 100));
     const uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
-    document.getElementById('statsContainer').innerHTML = `
+    document.getElementById("statsContainer").innerHTML = `
         <div class="stats-card">
             <div class="stats-number">${learnedFacts.length}</div>
+            <div style="color:#94a3b8">faits appris</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${uniqueCategories.size}</div>
+            <div style="color:#94a3b8">catégories explorées</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${FACTS.length}</div>
+            <div style="color:#94a3b8">faits disponibles</div>
+        </div>
+    `;
+    document.getElementById("statsView").classList.add("open");
+    enableSwipeBack();
+}
             <div style="color:#94a3b8">faits appris</div>
             <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
         </div>
