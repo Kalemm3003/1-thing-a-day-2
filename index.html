@@ -2,13 +2,11 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="1 Thing a Day">
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
     <title>1 Thing a Day</title>
 </head>
 <body>
@@ -19,9 +17,7 @@
         </header>
 
         <div class="card-container">
-            <div id="card" class="card">
-                <!-- Le contenu est généré par JS -->
-            </div>
+            <div id="card" class="card"></div>
         </div>
 
         <nav class="nav-bar">
@@ -31,15 +27,15 @@
         </nav>
     </div>
 
-    <div class="history-view" id="historyView">
+    <div class="side-view" id="historyView">
         <button class="close-btn" onclick="closeHistory()">✕</button>
-        <h2>📖 Ce que j'ai appris</h2>
+        <h2>📖 Historique</h2>
         <div id="historyList"></div>
     </div>
 
-    <div class="stats-view" id="statsView">
+    <div class="side-view" id="statsView">
         <button class="close-btn" onclick="closeStats()">✕</button>
-        <h2>📊 Mes statistiques</h2>
+        <h2>📊 Statistiques</h2>
         <div id="statsContainer"></div>
     </div>
 
