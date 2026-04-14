@@ -7,13 +7,18 @@ let currentView = 'daily';
 
 const card = document.getElementById('card');
 
+// ==================== POPUPS D'ORIGINE ====================
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
     let popup = document.createElement('div');
     popup.className = 'info-popup';
-    popup.innerHTML = `<h4>${title}</h4><p>${content}</p><button onclick="this.parentElement.remove()">Fermer</button>`;
+    popup.innerHTML = `<h4>${title}</h4><p>${content}</p><button>Fermer</button>`;
     document.body.appendChild(popup);
+    
+    const close = () => popup.remove();
+    popup.querySelector('button').onclick = close;
+    popup.onclick = (e) => { if(e.target === popup) close(); };
 }
 
 function showDefinition(definition) {
@@ -21,23 +26,15 @@ function showDefinition(definition) {
     if (oldPopup) oldPopup.remove();
     let popup = document.createElement('div');
     popup.className = 'definition-popup';
-    popup.innerHTML = `<h4>📖 Définition</h4><p>${definition}</p><button onclick="this.parentElement.remove()">Fermer</button>`;
+    popup.innerHTML = `<h4>📖 Définition</h4><p>${definition}</p><button>Fermer</button>`;
     document.body.appendChild(popup);
+    
+    const close = () => popup.remove();
+    popup.querySelector('button').onclick = close;
+    popup.onclick = (e) => { if(e.target === popup) close(); };
 }
 
-function showToast(msg) {
-    let toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-}
-
-function updateStreak() {
-    let streakElem = document.getElementById('streak');
-    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
-}
-
+// ==================== COEUR DE L'APP ====================
 function renderFact(fact) {
     currentFact = fact;
     let text = fact.text;
@@ -76,7 +73,6 @@ function setupGestures() {
                 learnedFacts.push(currentFact.id);
                 localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
                 updateStreak();
-                showToast('✅ Appris !');
             }
             renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]);
         } else {
@@ -86,7 +82,7 @@ function setupGestures() {
     };
 }
 
-// --- RENDU HISTORIQUE ---
+// ==================== HISTORIQUE & STATS ====================
 function showHistory() {
     currentView = 'history';
     updateActiveMenu();
@@ -94,16 +90,14 @@ function showHistory() {
     document.getElementById('historyList').innerHTML = list.length === 0 ? 
         '<div class="empty-state">📭 Aucun fait appris</div>' : 
         list.reverse().map(f => `
-            <div class="history-item" onclick="window.showFactDetail(${f.id})">
+            <div class="history-item">
                 <h3>${f.title}</h3>
                 <p>${f.text.substring(0, 70)}...</p>
                 <small>📂 ${f.category}</small>
             </div>`).join('');
     document.getElementById('historyView').classList.add('open');
-    enableSwipeBack();
 }
 
-// --- RENDU STATS ---
 function showStats() {
     currentView = 'stats';
     updateActiveMenu();
@@ -114,22 +108,22 @@ function showStats() {
             <div style="color:#94a3b8">faits appris</div>
             <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
         </div>
-        <div class="stats-card"><div class="stats-number">${new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category)).size}</div><div style="color:#94a3b8">catégories</div></div>
+        <div class="stats-card">
+            <div class="stats-number">${new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category)).size}</div>
+            <div style="color:#94a3b8">catégories explorées</div>
+        </div>
     `;
     document.getElementById('statsView').classList.add('open');
-    enableSwipeBack();
 }
 
-// --- NAVIGATION & SWIPE RETOUR ---
+// ==================== NAV & SWIPE BACK ====================
 let swipeStartX = 0;
-function enableSwipeBack() {
-    document.body.ontouchstart = e => swipeStartX = e.touches[0].clientX;
-    document.body.ontouchend = e => {
-        if (e.changedTouches[0].clientX - swipeStartX > 80 && currentView !== 'daily') {
-            closeHistory(); closeStats();
-        }
-    };
-}
+document.addEventListener('touchstart', e => swipeStartX = e.touches[0].clientX);
+document.addEventListener('touchend', e => {
+    if (currentView !== 'daily' && (e.changedTouches[0].clientX - swipeStartX > 80)) {
+        closeHistory(); closeStats();
+    }
+});
 
 function updateActiveMenu() {
     document.querySelectorAll('.nav-item').forEach((item, i) => {
@@ -137,9 +131,13 @@ function updateActiveMenu() {
     });
 }
 
+function updateStreak() {
+    const streakElem = document.getElementById('streak');
+    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
+}
+
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); };
-window.showFactDetail = (id) => showPopup(FACTS.find(f => f.id === id).title, FACTS.find(f => f.id === id).moreInfo);
 
 document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(); window.closeStats(); };
 document.querySelectorAll('.nav-item')[1].onclick = showHistory;
