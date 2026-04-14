@@ -6,8 +6,17 @@ let startX = 0;
 let currentView = 'daily';
 let isPopupOpen = false;
 
-const card = document.getElementById('card');
+// Initialisation au chargement du DOM
+document.addEventListener('DOMContentLoaded', () => {
+    const card = document.getElementById('card');
+    if (card) {
+        renderFact(FACTS[0]);
+        setupGestures();
+        updateStreak();
+    }
+});
 
+// ==================== POPUPS ====================
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
@@ -32,19 +41,7 @@ function showPopup(title, content) {
         setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
     };
     overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
-    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; popupBox.style.transition = 'none'; e.stopPropagation(); });
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 0) { popupBox.style.transform = `translateY(${moveY}px)`; popupBox.style.opacity = `${1 - moveY / 300}`; }
-        e.stopPropagation();
-    });
-    popupBox.addEventListener('touchend', (e) => {
-        const moveY = e.changedTouches[0].clientY - startY;
-        if (moveY > 100) closeWithAnimation();
-        else { popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease'; popupBox.style.transform = 'translateY(0)'; popupBox.style.opacity = '1'; }
-        e.stopPropagation();
-    });
+    overlay.onclick = (e) => { if (e.target === overlay) closeWithAnimation(); };
 }
 
 function showDefinition(definition) {
@@ -71,27 +68,14 @@ function showDefinition(definition) {
         setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
     };
     overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
-    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; popupBox.style.transition = 'none'; e.stopPropagation(); });
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 0) { popupBox.style.transform = `translateY(${moveY}px)`; popupBox.style.opacity = `${1 - moveY / 300}`; }
-        e.stopPropagation();
-    });
-    popupBox.addEventListener('touchend', (e) => {
-        const moveY = e.changedTouches[0].clientY - startY;
-        if (moveY > 100) closeWithAnimation();
-        else { popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease'; popupBox.style.transform = 'translateY(0)'; popupBox.style.opacity = '1'; }
-        e.stopPropagation();
-    });
+    overlay.onclick = (e) => { if (e.target === overlay) closeWithAnimation(); };
 }
 
-function updateStreak() {
-    let streakElem = document.getElementById('streak');
-    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
-}
-
+// ==================== COEUR DE L'APP ====================
 function renderFact(fact) {
+    const card = document.getElementById('card');
+    if (!card || !fact) return;
+
     currentFact = fact;
     let text = fact.text;
     if (fact.hardWords) {
@@ -100,18 +84,23 @@ function renderFact(fact) {
             text = text.replace(regex, `<span class="hard-word" data-def="${hw.definition}">$1</span>`);
         });
     }
+
     card.innerHTML = `
         <div class="category-badge">${fact.category}</div>
         <h1 style="font-size: 1.8rem; margin-bottom: 15px;">${fact.title}</h1>
         <p style="font-size: 1.1rem; line-height: 1.6;">${text}</p>
         <button class="more-btn">En savoir plus</button>
     `;
+
+    // Events sur les mots difficiles
     card.querySelectorAll('.hard-word').forEach(el => {
         el.onclick = (e) => { e.stopPropagation(); showDefinition(el.dataset.def); };
     });
+
+    // Event sur le bouton En savoir plus
     card.querySelector('.more-btn').onclick = () => showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
     
-    // Reset style pour l'entrée de la nouvelle carte
+    // Animation d'entrée
     card.style.transition = 'none';
     card.style.transform = 'scale(0.9) translateY(20px)';
     card.style.opacity = '0';
@@ -119,47 +108,59 @@ function renderFact(fact) {
         card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         card.style.transform = 'translateX(0) rotate(0) scale(1)';
         card.style.opacity = '1';
-    }, 10);
+    }, 50);
 }
 
 function setupGestures() {
+    const card = document.getElementById('card');
     let moveX = 0;
+
     card.ontouchstart = e => { 
         startX = e.touches[0].clientX; 
         card.style.transition = 'none'; 
     };
+
     card.ontouchmove = e => {
         moveX = e.touches[0].clientX - startX;
         const rotation = moveX / 15;
         card.style.transform = `translateX(${moveX}px) rotate(${rotation}deg)`;
-        card.style.opacity = `${1 - Math.abs(moveX) / 1000}`;
+        card.style.opacity = `${1 - Math.abs(moveX) / 600}`;
     };
+
     card.ontouchend = e => {
         const diff = e.changedTouches[0].clientX - startX;
         if (Math.abs(diff) > 120) {
-            // Animation de sortie rapide
+            // Animation de sortie
             const outX = diff > 0 ? 1000 : -1000;
-            card.style.transition = 'all 0.5s ease-in';
+            card.style.transition = 'all 0.4s ease-in';
             card.style.transform = `translateX(${outX}px) rotate(${outX / 20}deg)`;
             card.style.opacity = '0';
             
+            // Logique "Appris"
             if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
                 learnedFacts.push(currentFact.id);
                 localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
                 updateStreak();
             }
             
-            // Charger la nouvelle carte après la sortie
+            // Nouvelle carte
             setTimeout(() => {
-                renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]);
+                const nextFact = FACTS[Math.floor(Math.random() * FACTS.length)];
+                renderFact(nextFact);
             }, 300);
         } else {
-            // Retour au centre
+            // Retour au centre si swipe trop court
             card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             card.style.transform = 'translateX(0) rotate(0)';
             card.style.opacity = '1';
         }
     };
+}
+
+// ==================== NAV & VUES ====================
+function updateStreak() {
+    const streakElem = document.getElementById('streak');
+    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
 }
 
 function showHistory() {
@@ -179,11 +180,11 @@ function showHistory() {
 }
 
 function showStats() {
-    currentView = "stats";
+    currentView = 'stats';
     updateActiveMenu();
-    const progress = Math.min(100, Math.round((learnedFacts.length / FACTS.length) * 100));
+    const progress = Math.round((learnedFacts.length / FACTS.length) * 100);
     const uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
-    document.getElementById("statsContainer").innerHTML = `
+    document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
             <div class="stats-number">${learnedFacts.length}</div>
             <div style="color:#94a3b8">faits appris</div>
@@ -192,25 +193,6 @@ function showStats() {
         <div class="stats-card">
             <div class="stats-number">${uniqueCategories.size}</div>
             <div style="color:#94a3b8">catégories explorées</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${FACTS.length}</div>
-            <div style="color:#94a3b8">faits disponibles</div>
-        </div>
-    `;
-    document.getElementById("statsView").classList.add("open");
-    enableSwipeBack();
-}
-            <div style="color:#94a3b8">faits appris</div>
-            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progress}%"></div></div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${uniqueCategories.size}</div>
-            <div style="color:#94a3b8">catégories explorées</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${FACTS.length}</div>
-            <div style="color:#94a3b8">faits disponibles</div>
         </div>
     `;
     document.getElementById('statsView').classList.add('open');
@@ -223,14 +205,15 @@ function updateActiveMenu() {
     });
 }
 
+// Swipe back global
 let globalStartX = 0;
-function onGlobalTouchStart(e) { globalStartX = e.touches[0].clientX; }
-function onGlobalTouchEnd(e) {
+const onGlobalTouchStart = (e) => globalStartX = e.touches[0].clientX;
+const onGlobalTouchEnd = (e) => {
     const deltaX = e.changedTouches[0].clientX - globalStartX;
     if (deltaX > 80 && !isPopupOpen && currentView !== 'daily') {
-        closeHistory(); closeStats();
+        window.closeHistory(); window.closeStats();
     }
-}
+};
 
 function enableSwipeBack() {
     document.addEventListener('touchstart', onGlobalTouchStart);
@@ -241,6 +224,7 @@ function disableSwipeBack() {
     document.removeEventListener('touchend', onGlobalTouchEnd);
 }
 
+// Exposer les fonctions globales
 window.showFactDetail = (id) => {
     const fact = FACTS.find(f => f.id === id);
     if (fact) showPopup(fact.title, fact.moreInfo || fact.text);
@@ -248,10 +232,7 @@ window.showFactDetail = (id) => {
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 
+// Listeners Navigation
 document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(); window.closeStats(); };
 document.querySelectorAll('.nav-item')[1].onclick = showHistory;
 document.querySelectorAll('.nav-item')[2].onclick = showStats;
-
-renderFact(FACTS[0]);
-setupGestures();
-updateStreak();
