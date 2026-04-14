@@ -185,29 +185,7 @@ function renderFact(fact) {
 }
 
 function setupGestures() {
-    card.ontouchstart = e => { startX = e.touches[0].clientX; card.style.transition = "none"; };
-    card.ontouchmove = e => {
-        const move = e.touches[0].clientX - startX;
-        card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
-        card.style.opacity = `${1 - Math.abs(move) / 500}`;
-    };
-    card.ontouchend = e => {
-        const diff = e.changedTouches[0].clientX - startX;
-        card.style.transition = "all 0.3s ease";
-        if (Math.abs(diff) > 100) {
-            if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
-                learnedFacts.push(currentFact.id);
-                localStorage.setItem("learnedFacts", JSON.stringify(learnedFacts));
-                updateStreak();
-                showToast("✅ Appris !");
-            }
-            renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]);
-        } else {
-            card.style.transform = "translateX(0) rotate(0)";
-            card.style.opacity = "1";
-        }
-    };
-}
+    card.ontouchstart = e => { startX = e.touches[0].clientX; card.style.transition = 'none'; };
     card.ontouchmove = e => {
         const move = e.touches[0].clientX - startX;
         card.style.transform = `translateX(${move}px) rotate(${move / 20}deg)`;
@@ -324,32 +302,3 @@ document.querySelectorAll('.nav-item')[2].onclick = showStats;
 renderFact(FACTS[0]);
 setupGestures();
 updateStreak();
-
-function nextFact() {
-    card.style.transition = "transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.2s ease-out";
-    card.style.transform = "translateX(120%) rotate(10deg)";
-    card.style.opacity = "0";
-    setTimeout(() => {
-        const next = getNextUnlearnedFact();
-        renderFact(next);
-        card.style.transition = "none";
-        card.style.transform = "translateX(-120%) rotate(-10deg)";
-        card.style.opacity = "0";
-        setTimeout(() => {
-            card.style.transition = "transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.25s ease-out";
-            card.style.transform = "translateX(0) rotate(0)";
-            card.style.opacity = "1";
-        }, 20);
-    }, 250);
-}
-    }, 200);
-}
-
-function getNextUnlearnedFact() {
-    let availableFacts = FACTS.filter(f => !learnedFacts.includes(f.id));
-    if (availableFacts.length === 0) {
-        showToast('🏆 Félicitations ! Tu as tout appris !');
-        return FACTS[Math.floor(Math.random() * FACTS.length)];
-    }
-    return availableFacts[Math.floor(Math.random() * availableFacts.length)];
-}
