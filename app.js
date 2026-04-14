@@ -11,7 +11,7 @@ const card = document.getElementById('card');
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
-    
+
     let popup = document.createElement('div');
     popup.className = 'info-popup';
     popup.innerHTML = `
@@ -20,7 +20,7 @@ function showPopup(title, content) {
         <button>Fermer</button>
     `;
     document.body.appendChild(popup);
-    
+
     popup.querySelector('button').onclick = () => popup.remove();
     popup.addEventListener('click', (e) => {
         if (e.target === popup || e.target === popup.querySelector('button')) {
@@ -32,7 +32,7 @@ function showPopup(title, content) {
 function showDefinition(definition) {
     let oldPopup = document.querySelector('.definition-popup, .info-popup');
     if (oldPopup) oldPopup.remove();
-    
+
     let popup = document.createElement('div');
     popup.className = 'definition-popup';
     popup.innerHTML = `
@@ -41,7 +41,7 @@ function showDefinition(definition) {
         <button>Fermer</button>
     `;
     document.body.appendChild(popup);
-    
+
     popup.querySelector('button').onclick = () => popup.remove();
     popup.addEventListener('click', (e) => {
         if (e.target === popup || e.target === popup.querySelector('button')) {
@@ -72,7 +72,7 @@ updateStreak();
 function getDailyFact() {
     const today = new Date();
     const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-    
+
     let dailyFact = FACTS.find(f => f.dayOfYear === dayOfYear);
     if (!dailyFact) {
         dailyFact = FACTS[0];
@@ -83,7 +83,7 @@ function getDailyFact() {
 // ==================== PROCHAIN FAIT ====================
 function getNextUnlearnedFact() {
     let availableFacts = FACTS.filter(f => !learnedFacts.includes(f.id));
-    
+
     if (availableFacts.length === 0) {
         showToast('🏆 Félicitations ! Tu as tout appris !');
         return FACTS[Math.floor(Math.random() * FACTS.length)];
@@ -106,7 +106,7 @@ function markAsLearned(id) {
 // ==================== RENDER FACT ====================
 function renderFact(fact) {
     currentFact = fact;
-    
+
     let text = fact.text;
     if (fact.hardWords) {
         fact.hardWords.forEach(hw => {
@@ -121,7 +121,7 @@ function renderFact(fact) {
         <p style="font-size: 1.1rem; line-height: 1.6;">${text}</p>
         <button class="more-btn">En savoir plus</button>
     `;
-    
+
     card.querySelectorAll('.hard-word').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -129,11 +129,11 @@ function renderFact(fact) {
             if (def) showDefinition(def);
         });
     });
-    
+
     card.querySelector('.more-btn').addEventListener('click', () => {
         showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
     });
-    
+
     card.style.transform = 'translateX(0) rotate(0)';
     card.style.opacity = '1';
 }
@@ -159,7 +159,7 @@ function setupGestures() {
 
     card.addEventListener('touchend', e => {
         const diff = e.changedTouches[0].clientX - startX;
-        card.style.transition = 'all 0.4s ease';
+        card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
         
         if (Math.abs(diff) > 100) {
             if (diff > 0) {
@@ -185,14 +185,14 @@ function nextFact() {
 function showHistory() {
     currentView = 'history';
     updateActiveMenu();
-    
+
     let historyList = document.getElementById('historyList');
     let learnedFactsList = FACTS.filter(f => learnedFacts.includes(f.id));
-    
+
     if (learnedFactsList.length === 0) {
         historyList.innerHTML = '<div class="empty-state">📭 Aucun fait appris<br>Swipe à droite pour apprendre !</div>';
     } else {
-        historyList.innerHTML = learnedFactsList.slice().reverse().map(f => 
+        historyList.innerHTML = learnedFactsList.slice().reverse().map(f =>
             `<div class="history-item" onclick="window.showFactDetail(${f.id})">
                 <h3>${f.title}</h3>
                 <p>${f.text.substring(0, 80)}...</p>
@@ -220,10 +220,10 @@ function closeHistory() {
 function showStats() {
     currentView = 'stats';
     updateActiveMenu();
-    
+
     let uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
     let progress = Math.round((learnedFacts.length / FACTS.length) * 100);
-    
+
     document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
             <div class="stats-number">${learnedFacts.length}</div>
@@ -274,7 +274,7 @@ function onSwipeBackStart(e) {
 function onSwipeBackEnd(e) {
     const endX = e.changedTouches[0].clientX;
     const deltaX = endX - swipeBackStartX;
-    
+
     if (deltaX > 50) {
         if (document.getElementById('historyView').classList.contains('open')) {
             closeHistory();
