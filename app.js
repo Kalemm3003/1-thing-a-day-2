@@ -7,46 +7,9 @@ let currentView = 'daily';
 let isPopupOpen = false;
 
 const card = document.getElementById('card');
+const swipeZone = document.querySelector('.card-container'); // Zone de swipe élargie
 
-// Tooltip pour les définitions (style Apple)
-function showTooltip(word, definition, targetElement) {
-    let oldTooltip = document.querySelector('.apple-tooltip');
-    if (oldTooltip) oldTooltip.remove();
-    
-    let tooltip = document.createElement('div');
-    tooltip.className = 'apple-tooltip';
-    tooltip.innerHTML = `
-        <div class="tooltip-content">
-            <strong>${word}</strong>
-            <p>${definition}</p>
-        </div>
-        <div class="tooltip-arrow"></div>
-    `;
-    document.body.appendChild(tooltip);
-    
-    // Positionner au-dessus du mot cliqué
-    const rect = targetElement.getBoundingClientRect();
-    tooltip.style.left = `${rect.left + rect.width / 2 - 100}px`;
-    tooltip.style.bottom = `${window.innerHeight - rect.top + 10}px`;
-    
-    // Animation d'entrée
-    tooltip.style.animation = 'tooltipFadeIn 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
-    
-    // Disparaît au prochain clic ou après 3 secondes
-    const hideTooltip = () => {
-        tooltip.style.animation = 'tooltipFadeOut 0.15s ease-out';
-        setTimeout(() => tooltip.remove(), 150);
-        document.removeEventListener('click', hideTooltip);
-        document.removeEventListener('touchstart', hideTooltip);
-    };
-    
-    setTimeout(() => {
-        document.addEventListener('click', hideTooltip);
-        document.addEventListener('touchstart', hideTooltip);
-    }, 10);
-}
-
-function showPopup(title, content, hardWords = []) {
+function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
     
@@ -54,21 +17,11 @@ function showPopup(title, content, hardWords = []) {
     
     let overlay = document.createElement('div');
     overlay.className = 'info-popup';
-    
-    // Traiter le contenu pour rendre les mots compliqués cliquables
-    let processedContent = content;
-    if (hardWords && hardWords.length > 0) {
-        hardWords.forEach(hw => {
-            const regex = new RegExp(`(${hw.word})`, 'gi');
-            processedContent = processedContent.replace(regex, `<span class="popup-hard-word" data-word="${hw.word}" data-def="${hw.definition.replace(/"/g, '&quot;')}">$1</span>`);
-        });
-    }
-    
     overlay.innerHTML = `
         <div class="popup-box">
             <div class="popup-handle"></div>
             <h4>${title}</h4>
-            <p>${processedContent}</p>
+            <p>${content}</p>
             <button class="close-popup-btn">Fermer</button>
         </div>
     `;
@@ -77,16 +30,6 @@ function showPopup(title, content, hardWords = []) {
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
     let currentY = 0;
-    
-    // Attacher les événements pour les mots cliquables dans la popup
-    overlay.querySelectorAll('.popup-hard-word').forEach(el => {
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const word = el.dataset.word;
-            const definition = el.dataset.def;
-            showTooltip(word, definition, el);
-        });
-    });
     
     const closeWithAnimation = () => {
         popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
@@ -218,7 +161,7 @@ function renderFact(fact) {
         }; 
     });
     
-    card.querySelector('.more-btn').onclick = () => showPopup(currentFact.title, currentFact.moreInfo || currentFact.text, currentFact.hardWords);
+    card.querySelector('.more-btn').onclick = () => showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
     
     card.style.transition = 'none';
     card.style.transform = 'scale(0.9) translateY(20px)';
@@ -230,30 +173,42 @@ function renderFact(fact) {
     }, 10);
 }
 
+// Zone de swipe élargie (toute la zone card-container)
 function setupGestures() {
     let moveX = 0;
-    card.ontouchstart = e => { startX = e.touches[0].clientX; card.style.transition = 'none'; };
-    card.ontouchmove = e => {
+    
+    swipeZone.ontouchstart = e => { 
+        startX = e.touches[0].clientX; 
+        card.style.transition = 'none'; 
+    };
+    
+    swipeZone.ontouchmove = e => {
         moveX = e.touches[0].clientX - startX;
         const rotation = moveX / 15;
         card.style.transform = `translateX(${moveX}px) rotate(${rotation}deg)`;
-        card.style.opacity = `${1 - Math.abs(moveX) / 1000}`;
+        card.style.opacity = `${1 - Math.abs(moveX) / 800}`;
     };
-    card.ontouchend = e => {
+    
+    swipeZone.ontouchend = e => {
         const diff = e.changedTouches[0].clientX - startX;
-        if (Math.abs(diff) > 120) {
+        
+        // Seuil plus bas : 40px au lieu de 120px
+        if (Math.abs(diff) > 40) {
             const outX = diff > 0 ? 1000 : -1000;
-            card.style.transition = 'all 0.5s ease-in';
+            card.style.transition = 'all 0.4s ease-out';
             card.style.transform = `translateX(${outX}px) rotate(${outX / 20}deg)`;
             card.style.opacity = '0';
+            
             if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
                 learnedFacts.push(currentFact.id);
                 localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
                 updateStreak();
             }
-            setTimeout(() => { renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]); }, 300);
+            setTimeout(() => { 
+                renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]); 
+            }, 300);
         } else {
-            card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            card.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             card.style.transform = 'translateX(0) rotate(0)';
             card.style.opacity = '1';
         }
@@ -317,7 +272,7 @@ function disableSwipeBack() { document.removeEventListener('touchstart', onGloba
 
 window.showFactDetail = (id) => { 
     const fact = FACTS.find(f => f.id === id); 
-    if (fact) showPopup(fact.title, fact.moreInfo || fact.text, fact.hardWords); 
+    if (fact) showPopup(fact.title, fact.moreInfo || fact.text); 
 };
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
