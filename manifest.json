@@ -1,9 +1,16 @@
 {
   "name": "1 Thing a Day",
-  "short_name": "1Thing",
+  "short_name": "1ThingADay",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
-  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png" }]
+  "description": "Apprenez 1 fait par jour",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
