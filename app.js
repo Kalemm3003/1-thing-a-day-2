@@ -1,39 +1,131 @@
 import { FACTS } from './data.js';
+
 let learnedFacts = JSON.parse(localStorage.getItem('learnedFacts')) || [];
 let currentFact = null;
 let startX = 0;
 let currentView = 'daily';
 let isPopupOpen = false;
+
 const card = document.getElementById('card');
 
-function showPopup(title, content) {
+// Tooltip pour les définitions (style Apple)
+function showTooltip(word, definition, targetElement) {
+    let oldTooltip = document.querySelector('.apple-tooltip');
+    if (oldTooltip) oldTooltip.remove();
+    
+    let tooltip = document.createElement('div');
+    tooltip.className = 'apple-tooltip';
+    tooltip.innerHTML = `
+        <div class="tooltip-content">
+            <strong>${word}</strong>
+            <p>${definition}</p>
+        </div>
+        <div class="tooltip-arrow"></div>
+    `;
+    document.body.appendChild(tooltip);
+    
+    // Positionner au-dessus du mot cliqué
+    const rect = targetElement.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + rect.width / 2 - 100}px`;
+    tooltip.style.bottom = `${window.innerHeight - rect.top + 10}px`;
+    
+    // Animation d'entrée
+    tooltip.style.animation = 'tooltipFadeIn 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
+    
+    // Disparaît au prochain clic ou après 3 secondes
+    const hideTooltip = () => {
+        tooltip.style.animation = 'tooltipFadeOut 0.15s ease-out';
+        setTimeout(() => tooltip.remove(), 150);
+        document.removeEventListener('click', hideTooltip);
+        document.removeEventListener('touchstart', hideTooltip);
+    };
+    
+    setTimeout(() => {
+        document.addEventListener('click', hideTooltip);
+        document.addEventListener('touchstart', hideTooltip);
+    }, 10);
+}
+
+function showPopup(title, content, hardWords = []) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
+    
     isPopupOpen = true;
+    
     let overlay = document.createElement('div');
     overlay.className = 'info-popup';
-    overlay.innerHTML = `<div class="popup-box"><div class="popup-handle"></div><h4>${title}</h4><p>${content}</p><button class="close-popup-btn">Fermer</button></div>`;
+    
+    // Traiter le contenu pour rendre les mots compliqués cliquables
+    let processedContent = content;
+    if (hardWords && hardWords.length > 0) {
+        hardWords.forEach(hw => {
+            const regex = new RegExp(`(${hw.word})`, 'gi');
+            processedContent = processedContent.replace(regex, `<span class="popup-hard-word" data-word="${hw.word}" data-def="${hw.definition.replace(/"/g, '&quot;')}">$1</span>`);
+        });
+    }
+    
+    overlay.innerHTML = `
+        <div class="popup-box">
+            <div class="popup-handle"></div>
+            <h4>${title}</h4>
+            <p>${processedContent}</p>
+            <button class="close-popup-btn">Fermer</button>
+        </div>
+    `;
     document.body.appendChild(overlay);
+    
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
+    let currentY = 0;
+    
+    // Attacher les événements pour les mots cliquables dans la popup
+    overlay.querySelectorAll('.popup-hard-word').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const word = el.dataset.word;
+            const definition = el.dataset.def;
+            showTooltip(word, definition, el);
+        });
+    });
+    
     const closeWithAnimation = () => {
         popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
         popupBox.style.transform = 'translateY(100px)';
         popupBox.style.opacity = '0';
-        setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
+        setTimeout(() => {
+            overlay.remove();
+            isPopupOpen = false;
+        }, 200);
     };
+    
     overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
-    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; popupBox.style.transition = 'none'; e.stopPropagation(); });
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 0) { popupBox.style.transform = `translateY(${moveY}px)`; popupBox.style.opacity = `${1 - moveY / 300}`; }
+    
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        popupBox.style.transition = 'none';
         e.stopPropagation();
     });
+    
+    popupBox.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const moveY = currentY - startY;
+        if (moveY > 0) {
+            popupBox.style.transform = `translateY(${moveY}px)`;
+            popupBox.style.opacity = `${1 - moveY / 300}`;
+        }
+        e.stopPropagation();
+    });
+    
     popupBox.addEventListener('touchend', (e) => {
-        const moveY = e.changedTouches[0].clientY - startY;
-        if (moveY > 100) closeWithAnimation();
-        else { popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease'; popupBox.style.transform = 'translateY(0)'; popupBox.style.opacity = '1'; }
+        const moveY = currentY - startY;
+        if (moveY > 100) {
+            closeWithAnimation();
+        } else {
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease';
+            popupBox.style.transform = 'translateY(0)';
+            popupBox.style.opacity = '1';
+        }
         e.stopPropagation();
     });
 }
@@ -41,31 +133,63 @@ function showPopup(title, content) {
 function showDefinition(definition) {
     let oldPopup = document.querySelector('.definition-popup, .info-popup');
     if (oldPopup) oldPopup.remove();
+    
     isPopupOpen = true;
+    
     let overlay = document.createElement('div');
     overlay.className = 'definition-popup';
-    overlay.innerHTML = `<div class="popup-box"><div class="popup-handle"></div><h4>📖 Définition</h4><p>${definition}</p><button class="close-popup-btn">Fermer</button></div>`;
+    overlay.innerHTML = `
+        <div class="popup-box">
+            <div class="popup-handle"></div>
+            <h4>📖 Définition</h4>
+            <p>${definition}</p>
+            <button class="close-popup-btn">Fermer</button>
+        </div>
+    `;
     document.body.appendChild(overlay);
+    
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
+    let currentY = 0;
+    
     const closeWithAnimation = () => {
         popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
         popupBox.style.transform = 'translateY(100px)';
         popupBox.style.opacity = '0';
-        setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
+        setTimeout(() => {
+            overlay.remove();
+            isPopupOpen = false;
+        }, 200);
     };
+    
     overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
-    popupBox.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; popupBox.style.transition = 'none'; e.stopPropagation(); });
-    popupBox.addEventListener('touchmove', (e) => {
-        const moveY = e.touches[0].clientY - startY;
-        if (moveY > 0) { popupBox.style.transform = `translateY(${moveY}px)`; popupBox.style.opacity = `${1 - moveY / 300}`; }
+    
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        popupBox.style.transition = 'none';
         e.stopPropagation();
     });
+    
+    popupBox.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const moveY = currentY - startY;
+        if (moveY > 0) {
+            popupBox.style.transform = `translateY(${moveY}px)`;
+            popupBox.style.opacity = `${1 - moveY / 300}`;
+        }
+        e.stopPropagation();
+    });
+    
     popupBox.addEventListener('touchend', (e) => {
-        const moveY = e.changedTouches[0].clientY - startY;
-        if (moveY > 100) closeWithAnimation();
-        else { popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease'; popupBox.style.transform = 'translateY(0)'; popupBox.style.opacity = '1'; }
+        const moveY = currentY - startY;
+        if (moveY > 100) {
+            closeWithAnimation();
+        } else {
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease';
+            popupBox.style.transform = 'translateY(0)';
+            popupBox.style.opacity = '1';
+        }
         e.stopPropagation();
     });
 }
@@ -86,10 +210,24 @@ function renderFact(fact) {
         });
     }
     card.innerHTML = `<div class="category-badge">${fact.category}</div><h1>${fact.title}</h1><p>${text}</p><button class="more-btn">En savoir plus</button>`;
-    card.querySelectorAll('.hard-word').forEach(el => { el.onclick = (e) => { e.stopPropagation(); showDefinition(el.dataset.def); }; });
-    card.querySelector('.more-btn').onclick = () => showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
-    card.style.transition = 'none'; card.style.transform = 'scale(0.9) translateY(20px)'; card.style.opacity = '0';
-    setTimeout(() => { card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; card.style.transform = 'translateX(0) rotate(0) scale(1)'; card.style.opacity = '1'; }, 10);
+    
+    card.querySelectorAll('.hard-word').forEach(el => { 
+        el.onclick = (e) => { 
+            e.stopPropagation(); 
+            showDefinition(el.dataset.def); 
+        }; 
+    });
+    
+    card.querySelector('.more-btn').onclick = () => showPopup(currentFact.title, currentFact.moreInfo || currentFact.text, currentFact.hardWords);
+    
+    card.style.transition = 'none';
+    card.style.transform = 'scale(0.9) translateY(20px)';
+    card.style.opacity = '0';
+    setTimeout(() => {
+        card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        card.style.transform = 'translateX(0) rotate(0) scale(1)';
+        card.style.opacity = '1';
+    }, 10);
 }
 
 function setupGestures() {
@@ -105,7 +243,9 @@ function setupGestures() {
         const diff = e.changedTouches[0].clientX - startX;
         if (Math.abs(diff) > 120) {
             const outX = diff > 0 ? 1000 : -1000;
-            card.style.transition = 'all 0.5s ease-in'; card.style.transform = `translateX(${outX}px) rotate(${outX / 20}deg)`; card.style.opacity = '0';
+            card.style.transition = 'all 0.5s ease-in';
+            card.style.transform = `translateX(${outX}px) rotate(${outX / 20}deg)`;
+            card.style.opacity = '0';
             if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
                 learnedFacts.push(currentFact.id);
                 localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
@@ -114,13 +254,15 @@ function setupGestures() {
             setTimeout(() => { renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]); }, 300);
         } else {
             card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            card.style.transform = 'translateX(0) rotate(0)'; card.style.opacity = '1';
+            card.style.transform = 'translateX(0) rotate(0)';
+            card.style.opacity = '1';
         }
     };
 }
 
 function showHistory() {
-    currentView = 'history'; updateActiveMenu();
+    currentView = 'history';
+    updateActiveMenu();
     const list = FACTS.filter(f => learnedFacts.includes(f.id));
     document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait appris</div>' :
         list.slice().reverse().map(f => `<div class="history-item" onclick="window.showFactDetail(${f.id})"><h3>${f.title}</h3><p>${f.text.substring(0, 70)}...</p><small>📂 ${f.category}</small></div>`).join('');
@@ -129,7 +271,8 @@ function showHistory() {
 }
 
 function showStats() {
-    currentView = 'stats'; updateActiveMenu();
+    currentView = 'stats';
+    updateActiveMenu();
     const validLearnedIDs = learnedFacts.filter(id => FACTS.some(f => f.id === id));
     const count = validLearnedIDs.length;
     const total = FACTS.length;
@@ -172,7 +315,10 @@ function onGlobalTouchEnd(e) {
 function enableSwipeBack() { document.addEventListener('touchstart', onGlobalTouchStart); document.addEventListener('touchend', onGlobalTouchEnd); }
 function disableSwipeBack() { document.removeEventListener('touchstart', onGlobalTouchStart); document.removeEventListener('touchend', onGlobalTouchEnd); }
 
-window.showFactDetail = (id) => { const fact = FACTS.find(f => f.id === id); if (fact) showPopup(fact.title, fact.moreInfo || fact.text); };
+window.showFactDetail = (id) => { 
+    const fact = FACTS.find(f => f.id === id); 
+    if (fact) showPopup(fact.title, fact.moreInfo || fact.text, fact.hardWords); 
+};
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 
