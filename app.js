@@ -1,7 +1,6 @@
 import { FACTS } from './data.js';
 
-let learningFacts = JSON.parse(localStorage.getItem('learningFacts')) || [];
-let knownFacts = JSON.parse(localStorage.getItem('knownFacts')) || [];
+let learnedFacts = JSON.parse(localStorage.getItem('learnedFacts')) || [];
 let currentFact = null;
 let startX = 0;
 let currentView = 'daily';
@@ -10,43 +9,158 @@ let isPopupOpen = false;
 const card = document.getElementById('card');
 const swipeZone = document.querySelector('.card-container');
 
-let lastReviewed = JSON.parse(localStorage.getItem('lastReviewed')) || {};
-
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
     if (oldPopup) oldPopup.remove();
-    
     isPopupOpen = true;
-    
     let overlay = document.createElement('div');
     overlay.className = 'info-popup';
-    overlay.innerHTML = `
-        <div class="popup-box">
-            <div class="popup-handle"></div>
-            <h4>${title}</h4>
-            <p>${content}</p>
-            <button class="close-popup-btn">Fermer</button>
-        </div>
-    `;
+    overlay.innerHTML = `<div class="popup-box"><div class="popup-handle"></div><h4>${title}</h4><p>${content}</p><button class="close-popup-btn">Fermer</button></div>`;
     document.body.appendChild(overlay);
-    
     let popupBox = overlay.querySelector('.popup-box');
     let startY = 0;
     let currentY = 0;
-    
     const closeWithAnimation = () => {
         popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
         popupBox.style.transform = 'translateY(100px)';
         popupBox.style.opacity = '0';
+        setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
+    };
+    overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        popupBox.style.transition = 'none';
+        e.stopPropagation();
+    });
+    popupBox.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const moveY = currentY - startY;
+        if (moveY > 0) {
+            popupBox.style.transform = `translateY(${moveY}px)`;
+            popupBox.style.opacity = `${1 - moveY / 300}`;
+        }
+        e.stopPropagation();
+    });
+    popupBox.addEventListener('touchend', (e) => {
+        const moveY = currentY - startY;
+        if (moveY > 100) {
+            closeWithAnimation();
+        } else {
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease';
+            popupBox.style.transform = 'translateY(0)';
+            popupBox.style.opacity = '1';
+        }
+        e.stopPropagation();
+    });
+}
+
+function showDefinition(definition) {
+    let oldPopup = document.querySelector('.definition-popup, .info-popup');
+    if (oldPopup) oldPopup.remove();
+    isPopupOpen = true;
+    let overlay = document.createElement('div');
+    overlay.className = 'definition-popup';
+    overlay.innerHTML = `<div class="popup-box"><div class="popup-handle"></div><h4>📖 Définition</h4><p>${definition}</p><button class="close-popup-btn">Fermer</button></div>`;
+    document.body.appendChild(overlay);
+    let popupBox = overlay.querySelector('.popup-box');
+    let startY = 0;
+    let currentY = 0;
+    const closeWithAnimation = () => {
+        popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
+        popupBox.style.transform = 'translateY(100px)';
+        popupBox.style.opacity = '0';
+        setTimeout(() => { overlay.remove(); isPopupOpen = false; }, 200);
+    };
+    overlay.querySelector('.close-popup-btn').onclick = closeWithAnimation;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithAnimation(); });
+    popupBox.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        popupBox.style.transition = 'none';
+        e.stopPropagation();
+    });
+    popupBox.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const moveY = currentY - startY;
+        if (moveY > 0) {
+            popupBox.style.transform = `translateY(${moveY}px)`;
+            popupBox.style.opacity = `${1 - moveY / 300}`;
+        }
+        e.stopPropagation();
+    });
+    popupBox.addEventListener('touchend', (e) => {
+        const moveY = currentY - startY;
+        if (moveY > 100) {
+            closeWithAnimation();
+        } else {
+            popupBox.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease';
+            popupBox.style.transform = 'translateY(0)';
+            popupBox.style.opacity = '1';
+        }
+        e.stopPropagation();
+    });
+}
+
+function updateStreak() {
+    let streakElem = document.getElementById('streak');
+    const validLearnedCount = learnedFacts.filter(id => FACTS.some(f => f.id === id)).length;
+    if (streakElem) streakElem.innerHTML = `🔥 ${validLearnedCount} appris`;
+}
+
+function renderFact(fact) {
+    currentFact = fact;
+    let text = fact.text;
+    if (fact.hardWords) {
+        fact.hardWords.forEach(hw => {
+            const regex = new RegExp(`(${hw.word})`, 'gi');
+            text = text.replace(regex, `<span class="hard-word" data-def="${hw.definition}">$1</span>`);
+        });
+    }
+    card.innerHTML = `<div class="category-badge">${fact.category}</div><h1>${fact.title}</h1><p>${text}</p><button class="more-btn">En savoir plus</button>`;
+    card.querySelectorAll('.hard-word').forEach(el => {
+        el.onclick = (e) => {
+            e.stopPropagation();
+            showDefinition(el.dataset.def);
+        };
+    });
+    card.querySelector('.more-btn').onclick = () => showPopup(currentFact.title, currentFact.moreInfo || currentFact.text);
+    card.style.transition = 'none';
+    card.style.transform = 'scale(0.9) translateY(20px)';
+    card.style.opacity = '0';
+    setTimeout(() => {
+        card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        card.style.transform = 'translateX(0) rotate(0) scale(1)';
+        card.style.opacity = '1';
+    }, 10);
+}
+
+function setupGestures() {
+    let moveX = 0;
+    swipeZone.ontouchstart = e => {
+        startX = e.touches[0].clientX;
+        card.style.transition = 'none';
+    };
+    swipeZone.ontouchmove = e => {
+        moveX = e.touches[0].clientX - startX;
+        const rotation = moveX / 15;
+        card.style.transform = `translateX(${moveX}px) rotate(${rotation}deg)`;
+        card.style.opacity = `${1 - Math.abs(moveX) / 800}`;
+    };
+    swipeZone.ontouchend = e => {
+        const diff = e.changedTouches[0].clientX - startX;
+        if (Math.abs(diff) > 40) {
+            const outX = diff > 0 ? 1000 : -1000;
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.transform = `translateX(${outX}px) rotate(${outX / 20}deg)`;
+            card.style.opacity = '0';
+            if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
+                learnedFacts.push(currentFact.id);
+                localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
+                updateStreak();
+            }
             setTimeout(() => {
-                const next = getNextFact();
-                card.style.transition = "none";
-                card.style.transform = "translateX(0) rotate(0)";
-                card.style.opacity = "0";
-                renderFact(next);
-                card.style.transition = "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-                card.style.opacity = "1";
-            }, 250);
+                renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]);
+            }, 300);
         } else {
             card.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             card.style.transform = 'translateX(0) rotate(0)';
@@ -58,16 +172,9 @@ function showPopup(title, content) {
 function showHistory() {
     currentView = 'history';
     updateActiveMenu();
-    const list = FACTS.filter(f => [...learningFacts, ...knownFacts].includes(f.id));
-    document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait vu</div>' :
-        list.slice().reverse().map(f => {
-            let status = learningFacts.includes(f.id) ? '📚 En apprentissage' : '✅ Su';
-            return `<div class="history-item" onclick="window.showFactDetail(${f.id})">
-                <h3>${f.title}</h3>
-                <p>${f.text.substring(0, 70)}...</p>
-                <small>📂 ${f.category} | ${status}</small>
-            </div>`;
-        }).join('');
+    const list = FACTS.filter(f => learnedFacts.includes(f.id));
+    document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait appris</div>' :
+        list.slice().reverse().map(f => `<div class="history-item" onclick="window.showFactDetail(${f.id})"><h3>${f.title}</h3><p>${f.text.substring(0, 70)}...</p><small>📂 ${f.category}</small></div>`).join('');
     document.getElementById('historyView').classList.add('open');
     enableSwipeBack();
 }
@@ -75,32 +182,26 @@ function showHistory() {
 function showStats() {
     currentView = 'stats';
     updateActiveMenu();
+    const validLearnedIDs = learnedFacts.filter(id => FACTS.some(f => f.id === id));
+    const count = validLearnedIDs.length;
     const total = FACTS.length;
-    const learningCount = learningFacts.length;
-    const knownCount = knownFacts.length;
-    const seenCount = learningCount + knownCount;
-    const progress = Math.min(Math.round((seenCount / total) * 100), 100);
-    const uniqueCategories = new Set(FACTS.filter(f => [...learningFacts, ...knownFacts].includes(f.id)).map(f => f.category));
-    
+    const progress = Math.min(Math.round((count / total) * 100), 100);
+    const uniqueCategories = new Set(FACTS.filter(f => validLearnedIDs.includes(f.id)).map(f => f.category));
     document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
-            <div class="stats-number">${learningCount}</div>
-            <div style="color:#94a3b8">📚 En apprentissage</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${knownCount}</div>
-            <div style="color:#94a3b8">✅ Su</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${seenCount} / ${total}</div>
-            <div style="color:#94a3b8">faits vus</div>
+            <div class="stats-number">${count}</div>
+            <div style="color:#94a3b8">faits appris</div>
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" style="width:${progress}%"></div>
             </div>
         </div>
         <div class="stats-card">
             <div class="stats-number">${uniqueCategories.size}</div>
-            <div style="color:#94a3b8">catégories</div>
+            <div style="color:#94a3b8">catégories explorées</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${total}</div>
+            <div style="color:#94a3b8">faits disponibles</div>
         </div>`;
     document.getElementById('statsView').classList.add('open');
     enableSwipeBack();
@@ -122,9 +223,9 @@ function onGlobalTouchEnd(e) {
 function enableSwipeBack() { document.addEventListener('touchstart', onGlobalTouchStart); document.addEventListener('touchend', onGlobalTouchEnd); }
 function disableSwipeBack() { document.removeEventListener('touchstart', onGlobalTouchStart); document.removeEventListener('touchend', onGlobalTouchEnd); }
 
-window.showFactDetail = (id) => { 
-    const fact = FACTS.find(f => f.id === id); 
-    if (fact) showPopup(fact.title, fact.moreInfo || fact.text); 
+window.showFactDetail = (id) => {
+    const fact = FACTS.find(f => f.id === id);
+    if (fact) showPopup(fact.title, fact.moreInfo || fact.text);
 };
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
@@ -133,7 +234,6 @@ document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(
 document.querySelectorAll('.nav-item')[1].onclick = showHistory;
 document.querySelectorAll('.nav-item')[2].onclick = showStats;
 
-let firstFact = FACTS.find(f => ![...learningFacts, ...knownFacts].includes(f.id)) || FACTS[0];
-renderFact(firstFact);
+renderFact(FACTS[0]);
 setupGestures();
-updateStats();
+updateStreak();
