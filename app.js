@@ -1,13 +1,17 @@
 import { FACTS } from './data.js';
 
-let learnedFacts = JSON.parse(localStorage.getItem('learnedFacts')) || [];
+let learningFacts = JSON.parse(localStorage.getItem('learningFacts')) || []; // En cours d'apprentissage
+let knownFacts = JSON.parse(localStorage.getItem('knownFacts')) || []; // Déjà su
 let currentFact = null;
 let startX = 0;
 let currentView = 'daily';
 let isPopupOpen = false;
 
 const card = document.getElementById('card');
-const swipeZone = document.querySelector('.card-container'); // Zone de swipe élargie
+const swipeZone = document.querySelector('.card-container');
+
+// Stockage des dates de dernière révision
+let lastReviewed = JSON.parse(localStorage.getItem('lastReviewed')) || {};
 
 function showPopup(title, content) {
     let oldPopup = document.querySelector('.info-popup, .definition-popup');
@@ -137,10 +141,9 @@ function showDefinition(definition) {
     });
 }
 
-function updateStreak() {
+function updateStats() {
     let streakElem = document.getElementById('streak');
-    const validLearnedCount = learnedFacts.filter(id => FACTS.some(f => f.id === id)).length;
-    if (streakElem) streakElem.innerHTML = `🔥 ${validLearnedCount} appris`;
+    if (streakElem) streakElem.innerHTML = `📚 ${learningFacts.length} en cours | ✅ ${knownFacts.length} su`;
 }
 
 function renderFact(fact) {
@@ -173,7 +176,55 @@ function renderFact(fact) {
     }, 10);
 }
 
-// Zone de swipe élargie (toute la zone card-container)
+function getNextFact() {
+    const today = Date.now();
+    const DAY = 24 * 60 * 60 * 1000;
+    
+    // 1. D'abord les faits en apprentissage (revenent plus souvent)
+    let learningDue = learningFacts.filter(id => {
+        let last = lastReviewed[id] || 0;
+        return today - last > 1 * DAY; // 1 jour pour réviser
+    });
+    
+    if (learningDue.length > 0) {
+        let nextFact = FACTS.find(f => f.id === learningDue[Math.floor(Math.random() * learningDue.length)]);
+        while (nextFact.id === currentFact?.id && learningDue.length > 1) {
+            nextFact = FACTS.find(f => f.id === learningDue[Math.floor(Math.random() * learningDue.length)]);
+        }
+        return nextFact;
+    }
+    
+    // 2. Ensuite les faits connus (revenent beaucoup plus tard)
+    let knownDue = knownFacts.filter(id => {
+        let last = lastReviewed[id] || 0;
+        return today - last > 30 * DAY; // 30 jours pour réviser
+    });
+    
+    if (knownDue.length > 0) {
+        let nextFact = FACTS.find(f => f.id === knownDue[Math.floor(Math.random() * knownDue.length)]);
+        while (nextFact.id === currentFact?.id && knownDue.length > 1) {
+            nextFact = FACTS.find(f => f.id === knownDue[Math.floor(Math.random() * knownDue.length)]);
+        }
+        return nextFact;
+    }
+    
+    // 3. Sinon un nouveau fait
+    let allIds = [...learningFacts, ...knownFacts];
+    let newFacts = FACTS.filter(f => !allIds.includes(f.id));
+    
+    if (newFacts.length === 0) {
+        showToast('🎓 Félicitations ! Tu as vu tous les faits !');
+        return FACTS[Math.floor(Math.random() * FACTS.length)];
+    }
+    
+    let nextFact = newFacts[Math.floor(Math.random() * newFacts.length)];
+    while (nextFact.id === currentFact?.id && newFacts.length > 1) {
+        nextFact = newFacts[Math.floor(Math.random() * newFacts.length)];
+    }
+    return nextFact;
+}
+
+// Zone de swipe élargie
 function setupGestures() {
     let moveX = 0;
     
@@ -192,20 +243,51 @@ function setupGestures() {
     swipeZone.ontouchend = e => {
         const diff = e.changedTouches[0].clientX - startX;
         
-        // Seuil plus bas : 40px au lieu de 120px
         if (Math.abs(diff) > 40) {
             const outX = diff > 0 ? 1000 : -1000;
             card.style.transition = 'all 0.4s ease-out';
             card.style.transform = `translateX(${outX}px) rotate(${outX / 20}deg)`;
             card.style.opacity = '0';
             
-            if (diff > 0 && !learnedFacts.includes(currentFact.id)) {
-                learnedFacts.push(currentFact.id);
-                localStorage.setItem('learnedFacts', JSON.stringify(learnedFacts));
-                updateStreak();
+            if (diff > 0) {
+                // Swipe droite → J'APPRENDS (revient bientôt)
+                if (!learningFacts.includes(currentFact.id) && !knownFacts.includes(currentFact.id)) {
+                    learningFacts.push(currentFact.id);
+                    localStorage.setItem('learningFacts', JSON.stringify(learningFacts));
+                    showToast('📚 J\'APPRENDS → Reviendra dans 1 jour');
+                } else if (knownFacts.includes(currentFact.id)) {
+                    // Si c'était dans connu, on le remet en apprentissage
+                    knownFacts = knownFacts.filter(id => id !== currentFact.id);
+                    learningFacts.push(currentFact.id);
+                    localStorage.setItem('knownFacts', JSON.stringify(knownFacts));
+                    localStorage.setItem('learningFacts', JSON.stringify(learningFacts));
+                    showToast('📚 À réviser → Reviendra dans 1 jour');
+                } else {
+                    showToast('📚 Déjà en apprentissage');
+                }
+                lastReviewed[currentFact.id] = Date.now();
+                localStorage.setItem('lastReviewed', JSON.stringify(lastReviewed));
+            } else {
+                // Swipe gauche → JE SAIS DÉJÀ (revient beaucoup plus tard)
+                if (!knownFacts.includes(currentFact.id)) {
+                    knownFacts.push(currentFact.id);
+                    localStorage.setItem('knownFacts', JSON.stringify(knownFacts));
+                    // Retirer des apprentissages si présent
+                    learningFacts = learningFacts.filter(id => id !== currentFact.id);
+                    localStorage.setItem('learningFacts', JSON.stringify(learningFacts));
+                    showToast('✅ JE SAIS DÉJÀ → Reviendra dans 30 jours');
+                } else {
+                    showToast('✅ Déjà dans "su"');
+                }
+                lastReviewed[currentFact.id] = Date.now();
+                localStorage.setItem('lastReviewed', JSON.stringify(lastReviewed));
             }
-            setTimeout(() => { 
-                renderFact(FACTS[Math.floor(Math.random() * FACTS.length)]); 
+            
+            updateStats();
+            
+            setTimeout(() => {
+                const next = getNextFact();
+                renderFact(next);
             }, 300);
         } else {
             card.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
@@ -218,9 +300,16 @@ function setupGestures() {
 function showHistory() {
     currentView = 'history';
     updateActiveMenu();
-    const list = FACTS.filter(f => learnedFacts.includes(f.id));
-    document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait appris</div>' :
-        list.slice().reverse().map(f => `<div class="history-item" onclick="window.showFactDetail(${f.id})"><h3>${f.title}</h3><p>${f.text.substring(0, 70)}...</p><small>📂 ${f.category}</small></div>`).join('');
+    const list = FACTS.filter(f => [...learningFacts, ...knownFacts].includes(f.id));
+    document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait vu</div>' :
+        list.slice().reverse().map(f => {
+            let status = learningFacts.includes(f.id) ? '📚 En apprentissage' : '✅ Su';
+            return `<div class="history-item" onclick="window.showFactDetail(${f.id})">
+                <h3>${f.title}</h3>
+                <p>${f.text.substring(0, 70)}...</p>
+                <small>📂 ${f.category} | ${status}</small>
+            </div>`;
+        }).join('');
     document.getElementById('historyView').classList.add('open');
     enableSwipeBack();
 }
@@ -228,16 +317,25 @@ function showHistory() {
 function showStats() {
     currentView = 'stats';
     updateActiveMenu();
-    const validLearnedIDs = learnedFacts.filter(id => FACTS.some(f => f.id === id));
-    const count = validLearnedIDs.length;
     const total = FACTS.length;
-    const progress = Math.min(Math.round((count / total) * 100), 100);
-    const uniqueCategories = new Set(FACTS.filter(f => validLearnedIDs.includes(f.id)).map(f => f.category));
+    const learningCount = learningFacts.length;
+    const knownCount = knownFacts.length;
+    const seenCount = learningCount + knownCount;
+    const progress = Math.min(Math.round((seenCount / total) * 100), 100);
+    const uniqueCategories = new Set(FACTS.filter(f => [...learningFacts, ...knownFacts].includes(f.id)).map(f => f.category));
     
     document.getElementById('statsContainer').innerHTML = `
         <div class="stats-card">
-            <div class="stats-number">${count}</div>
-            <div style="color:#94a3b8">faits appris</div>
+            <div class="stats-number">${learningCount}</div>
+            <div style="color:#94a3b8">📚 En apprentissage (révision 1j)</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${knownCount}</div>
+            <div style="color:#94a3b8">✅ Su (révision 30j)</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${seenCount} / ${total}</div>
+            <div style="color:#94a3b8">faits vus</div>
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" style="width:${progress}%"></div>
             </div>
@@ -245,10 +343,6 @@ function showStats() {
         <div class="stats-card">
             <div class="stats-number">${uniqueCategories.size}</div>
             <div style="color:#94a3b8">catégories explorées</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-number">${total}</div>
-            <div style="color:#94a3b8">faits disponibles</div>
         </div>`;
     document.getElementById('statsView').classList.add('open');
     enableSwipeBack();
@@ -281,6 +375,8 @@ document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(
 document.querySelectorAll('.nav-item')[1].onclick = showHistory;
 document.querySelectorAll('.nav-item')[2].onclick = showStats;
 
-renderFact(FACTS[0]);
+// Charger un nouveau fait (pas appris)
+let firstFact = FACTS.find(f => ![...learningFacts, ...knownFacts].includes(f.id)) || FACTS[0];
+renderFact(firstFact);
 setupGestures();
-updateStreak();
+updateStats();
