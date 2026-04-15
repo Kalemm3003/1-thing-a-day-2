@@ -17,7 +17,7 @@ export const FACTS = [
     dayOfYear: 102,
     title: "L'invention du Wi-Fi",
     text: "Le Wi-Fi a été inventé grâce à une technologie utilisée pour détecter les trous noirs.",
-    moreInfo: "L'ingénieure australienne John O'Sullivan travaillait sur une méthode de détection des signaux radio provenant de trous noirs. Ses recherches ont mené à un algorithme permettant de réduire les interférences, devenu la base du Wi-Fi moderne.",
+    moreInfo: "L'ingénieur John O'Sullivan travaillait sur une méthode de détection des signaux radio provenant de trous noirs. Ses recherches ont mené à un algorithme permettant de réduire les interférences, devenu la base du Wi-Fi moderne.",
     category: "Technologie",
     difficulty: 2,
     hardWords: [
@@ -139,7 +139,7 @@ export const FACTS = [
     dayOfYear: 112,
     title: "Briquet vs Allumettes",
     text: "Le premier briquet a été commercialisé trois ans avant l'allumette à friction.",
-    moreInfo: "Le briquet de Döbereiner est apparu en 1823, utilisant une entre l'hydrogène et le platine. L'allumette à friction, bien que paraissant plus rudimentaire, n'a été stabilisée qu'en 1826 par John Walker.",
+    moreInfo: "Le briquet de Döbereiner est apparu en 1823, utilisant une réaction entre l'hydrogène et le platine. L'allumette à friction, bien que paraissant plus rudimentaire, n'a été stabilisée qu'en 1826 par John Walker.",
     category: "Histoire",
     difficulty: 2,
     hardWords: [
@@ -237,14 +237,73 @@ export const FACTS = [
     hardWords: [
       { word: "oscillations", definition: "Mouvements de va-et-vient réguliers d'un atome." }
     ]
-  }
-,
+  },
+  {
+    id: 21,
+    dayOfYear: null,
+    title: "L'axolotl, l'éternel adolescent",
+    text: "L'axolotl ne vieillit pas et peut régénérer son cœur, sa moelle épinière et même une partie de son cerveau.",
+    moreInfo: "Ce petit amphibien mexicain reste à l'état larvaire toute sa vie, un phénomène appelé néoténie. Il peut recréer des membres perdus sans cicatrice, et les scientifiques l'étudient pour la médecine régénérative humaine.",
+    category: "Insolite",
+    difficulty: 2,
+    hardWords: [
+      { word: "néoténie", definition: "Maintien des caractères juvéniles chez un adulte." },
+      { word: "régénérative", definition: "Capable de reconstituer un tissu ou un organe." }
+    ]
+  },
+  {
+    id: 22,
+    dayOfYear: null,
+    title: "Le ketchup, ancien médicament",
+    text: "Au XIXe siècle, le ketchup était vendu en pharmacie comme remède contre les indigestions.",
+    moreInfo: "En 1834, un médecin américain nommé John Cook Bennett affirmait que le ketchup aux tomates soignait les brûlures d'estomac et la diarrhée. Les pharmacies en vendaient sous forme de pilules, avant que l'arnaque soit démasquée.",
+    category: "Insolite",
+    difficulty: 1,
+    hardWords: [
+      { word: "indigestions", definition: "Difficultés à digérer, maux d'estomac." }
+    ]
+  },
+  {
+    id: 23,
+    dayOfYear: null,
+    title: "Les vaches ont des meilleures amies",
+    text: "Une vache stressée voit son rythme cardiaque baisser quand elle est avec son amie préférée.",
+    moreInfo: "Des études ont montré que les vaches forment des liens d'amitié durables et que séparer deux copines augmente leur niveau de stress. Elles ont même des 'vaches préférées' avec qui elles passent plus de temps.",
+    category: "Insolite",
+    difficulty: 1,
+    hardWords: []
+  },
+  {
+    id: 24,
+    dayOfYear: null,
+    title: "Le sable du désert est inutile pour le béton",
+    text: "Le sable des déserts est trop lisse pour fabriquer du béton, contrairement au sable marin.",
+    moreInfo: "Les grains de sable du désert sont arrondis par l'érosion éolienne, ils ne s'accrochent pas bien entre eux. Le béton nécessite du sable anguleux, comme celui des rivières ou des plages. C'est pourquoi on extrait massivement du sable marin, menaçant les écosystèmes.",
+    category: "Science",
+    difficulty: 2,
+    hardWords: [
+      { word: "érosion éolienne", definition: "Usure des roches par le vent." },
+      { word: "anguleux", definition: "Qui a des angles vifs, non arrondi." }
+    ]
+  },
+  {
+    id: 25,
+    dayOfYear: null,
+    title: "L'ornithorynque a 10 chromosomes sexuels",
+    text: "Contre 2 chez l'humain, l'ornithorynque possède 5 paires de chromosomes qui déterminent son sexe.",
+    moreInfo: "Cet animal étrange a un système génétique unique : les mâles ont 10 chromosomes et les femelles 10 également. C'est l'un des rares mammifères à pondre des œufs et à produire du venin.",
+    category: "Nature",
+    difficulty: 2,
+    hardWords: [
+      { word: "chromosomes", definition: "Structures qui portent les gènes dans le noyau des cellules." }
+    ]
+  },
   {
     id: 26,
     dayOfYear: 131,
     title: "Le paradoxe de la banane",
     text: "Botaniquement parlant, la banane est une baie, mais la fraise n'en est pas une.",
-    moreInfo: "En botanique, une baie est un fruit charnu issu d'un seul ovaire et contenant des graines. La banane et la pastèque répondent à cette définition, tandis que la fraise est un 'fruit complexe' car ses vrais fruits sont les petits grains secs (akènes) à sa surface.",
+    moreInfo: "En botanique, une baie est un fruit charnu issu d'un seul ovaire et contenant des graines. La banane et la pastèque répondent à cette définition, tandis que la fraise est un 'fruit complexe' car ses vrais fruits sont les petits grains secs à sa surface.",
     category: "Nature",
     difficulty: 2,
     hardWords: [
@@ -300,9 +359,9 @@ export const FACTS = [
   {
     id: 31,
     dayOfYear: 142,
-    title: "La ville qui a changé de pays… par erreur",
-    text: "Un village belge a été déplacé de 2 mètres en France à cause d’un panneau mal remis.",
-    moreInfo: "En 2021, un agriculteur belge a déplacé une borne frontière gênante dans son champ, déplaçant techniquement la frontière franco-belge. L’erreur a été repérée grâce à des passionnés d’histoire locale. Le village a été « rendu » à la Belgique après remise en place de la borne.",
+    title: "La ville qui a changé de pays par erreur",
+    text: "Un village belge a été déplacé de 2 mètres en France à cause d'un panneau mal remis.",
+    moreInfo: "En 2021, un agriculteur belge a déplacé une borne frontière gênante dans son champ, déplaçant techniquement la frontière franco-belge. L'erreur a été repérée grâce à des passionnés d'histoire locale. Le village a été 'rendu' à la Belgique après remise en place de la borne.",
     category: "Histoire",
     difficulty: 1,
     hardWords: [
@@ -312,9 +371,9 @@ export const FACTS = [
   {
     id: 32,
     dayOfYear: null,
-    title: "Le fruit qui brûle plus de calories qu’il n’en apporte",
-    text: "Le céleri demande plus d’énergie à digérer qu’il n’en fournit.",
-    moreInfo: "Le céleri est extrêmement pauvre en calories mais riche en fibres, ce qui rend sa digestion énergivore. Ce phénomène est appelé « calories négatives », même si le terme est un peu exagéré scientifiquement. Il reste l’un des aliments les moins caloriques au monde.",
+    title: "Le fruit qui brûle plus de calories qu'il n'en apporte",
+    text: "Le céleri demande plus d'énergie à digérer qu'il n'en fournit.",
+    moreInfo: "Le céleri est extrêmement pauvre en calories mais riche en fibres, ce qui rend sa digestion énergivore. Ce phénomène est appelé 'calories négatives', même si le terme est un peu exagéré scientifiquement. Il reste l'un des aliments les moins caloriques au monde.",
     category: "Science",
     difficulty: 1,
     hardWords: [
@@ -325,8 +384,8 @@ export const FACTS = [
     id: 33,
     dayOfYear: 219,
     title: "Le mot le plus long prononçable sans respirer",
-    text: "Le mot « pneumonoultramicroscopicsilicovolcanoconiosis » est l’un des plus longs du monde.",
-    moreInfo: "Ce mot anglais désigne une maladie pulmonaire causée par l’inhalation de particules de silice très fines. Il a été inventé en 1935 pour être volontairement long. Il compte 45 lettres et est encore utilisé dans certains dictionnaires.",
+    text: "Le mot 'pneumonoultramicroscopicsilicovolcanoconiosis' est l'un des plus longs du monde.",
+    moreInfo: "Ce mot anglais désigne une maladie pulmonaire causée par l'inhalation de particules de silice très fines. Il a été inventé en 1935 pour être volontairement long. Il compte 45 lettres et est encore utilisé dans certains dictionnaires.",
     category: "Langue",
     difficulty: 2,
     hardWords: [
@@ -337,12 +396,12 @@ export const FACTS = [
     id: 34,
     dayOfYear: 304,
     title: "La tortue qui respire par les fesses",
-    text: "Certaines tortues peuvent absorber l’oxygène par leur cloaque.",
-    moreInfo: "Ce phénomène, appelé respiration cloacale, permet à certaines espèces de survivre sous l’eau pendant l’hiver. Elles absorbent l’oxygène dissous dans l’eau grâce à des tissus spécialisés situés dans leur cloaque.",
+    text: "Certaines tortues peuvent absorber l'oxygène par leur cloaque.",
+    moreInfo: "Ce phénomène, appelé respiration cloacale, permet à certaines espèces de survivre sous l'eau pendant l'hiver. Elles absorbent l'oxygène dissous dans l'eau grâce à des tissus spécialisés situés dans leur cloaque.",
     category: "Nature",
     difficulty: 2,
     hardWords: [
-      { word: "cloaque", definition: "Orifice unique servant à l’excrétion et à la reproduction chez certains animaux." }
+      { word: "cloaque", definition: "Orifice unique servant à l'excrétion et à la reproduction chez certains animaux." }
     ]
   },
   {
@@ -354,8 +413,7 @@ export const FACTS = [
     category: "Technologie",
     difficulty: 3,
     hardWords: [
-      { word: "anéchoïque", definition: "Qui n’émet ni ne réfléchit d’écho, grâce à une isolation acoustique extrême." }
+      { word: "anéchoïque", definition: "Qui n'émet ni ne réfléchit d'écho, grâce à une isolation acoustique extrême." }
     ]
   }
-];
 ];
