@@ -238,4 +238,124 @@ export const FACTS = [
       { word: "oscillations", definition: "Mouvements de va-et-vient réguliers d'un atome." }
     ]
   }
+,
+  {
+    id: 26,
+    dayOfYear: 131,
+    title: "Le paradoxe de la banane",
+    text: "Botaniquement parlant, la banane est une baie, mais la fraise n'en est pas une.",
+    moreInfo: "En botanique, une baie est un fruit charnu issu d'un seul ovaire et contenant des graines. La banane et la pastèque répondent à cette définition, tandis que la fraise est un 'fruit complexe' car ses vrais fruits sont les petits grains secs (akènes) à sa surface.",
+    category: "Nature",
+    difficulty: 2,
+    hardWords: [
+      { word: "akènes", definition: "Petit fruit sec contenant une seule graine et ne s'ouvrant pas à maturité." }
+    ]
+  },
+  {
+    id: 27,
+    dayOfYear: 132,
+    title: "L'effet Lindy",
+    text: "Plus une idée ou une technologie non périssable est ancienne, plus elle a de chances de durer.",
+    moreInfo: "Contrairement aux êtres vivants, les concepts comme le livre ou la roue voient leur espérance de vie augmenter avec le temps. Si un livre est édité depuis 50 ans, l'effet Lindy prédit qu'il le sera probablement encore dans 50 ans.",
+    category: "Psychologie",
+    difficulty: 2,
+    hardWords: [
+      { word: "périssable", definition: "Qui est sujet à s'altérer, à mourir ou à disparaître rapidement." }
+    ]
+  },
+  {
+    id: 28,
+    dayOfYear: 133,
+    title: "Le parfum de l'espace",
+    text: "L'espace a une odeur distinctive : un mélange de steak grillé et de métal chaud.",
+    moreInfo: "Les astronautes rapportent cette odeur sur leurs combinaisons après une sortie. Elle provient des hydrocarbures aromatiques polycycliques, des molécules libérées par l'agonie des étoiles qui flottent dans le vide spatial.",
+    category: "Espace",
+    difficulty: 2,
+    hardWords: [
+      { word: "hydrocarbures", definition: "Composés organiques formés exclusivement d'atomes de carbone et d'hydrogène." }
+    ]
+  },
+  {
+    id: 29,
+    dayOfYear: 134,
+    title: "La guerre la plus courte",
+    text: "La guerre entre le Royaume-Uni et Zanzibar en 1896 n'a duré que 38 minutes.",
+    moreInfo: "Le conflit a éclaté suite à une succession contestée au trône. Les navires britanniques ont bombardé le palais du sultan à 9h02, et à 9h40, le drapeau du sultan était abattu, marquant la fin immédiate des hostilités.",
+    category: "Histoire",
+    difficulty: 1,
+    hardWords: [
+      { word: "hostilités", definition: "Actes de guerre ou de combat entre deux puissances." }
+    ]
+  },
+  {
+    id: 30,
+    dayOfYear: null,
+    title: "L'or du corps humain",
+    text: "Chaque être humain contient environ 0,2 milligramme d'or pur dans son corps.",
+    moreInfo: "Cet or est principalement dissous dans notre sang. Bien que précieux, il faudrait environ 40 000 personnes pour récolter assez d'or pour fabriquer une seule pièce de monnaie standard.",
+    category: "Insolite",
+    difficulty: 2,
+    hardWords: []
+  },
+  {
+    id: 31,
+    dayOfYear: 142,
+    title: "La ville qui a changé de pays… par erreur",
+    text: "Un village belge a été déplacé de 2 mètres en France à cause d’un panneau mal remis.",
+    moreInfo: "En 2021, un agriculteur belge a déplacé une borne frontière gênante dans son champ, déplaçant techniquement la frontière franco-belge. L’erreur a été repérée grâce à des passionnés d’histoire locale. Le village a été « rendu » à la Belgique après remise en place de la borne.",
+    category: "Histoire",
+    difficulty: 1,
+    hardWords: [
+      { word: "borne frontière", definition: "Pierre ou marque indiquant officiellement la limite entre deux pays." }
+    ]
+  },
+  {
+    id: 32,
+    dayOfYear: null,
+    title: "Le fruit qui brûle plus de calories qu’il n’en apporte",
+    text: "Le céleri demande plus d’énergie à digérer qu’il n’en fournit.",
+    moreInfo: "Le céleri est extrêmement pauvre en calories mais riche en fibres, ce qui rend sa digestion énergivore. Ce phénomène est appelé « calories négatives », même si le terme est un peu exagéré scientifiquement. Il reste l’un des aliments les moins caloriques au monde.",
+    category: "Science",
+    difficulty: 1,
+    hardWords: [
+      { word: "fibres", definition: "Composants végétaux non digestibles qui facilitent le transit intestinal." }
+    ]
+  },
+  {
+    id: 33,
+    dayOfYear: 219,
+    title: "Le mot le plus long prononçable sans respirer",
+    text: "Le mot « pneumonoultramicroscopicsilicovolcanoconiosis » est l’un des plus longs du monde.",
+    moreInfo: "Ce mot anglais désigne une maladie pulmonaire causée par l’inhalation de particules de silice très fines. Il a été inventé en 1935 pour être volontairement long. Il compte 45 lettres et est encore utilisé dans certains dictionnaires.",
+    category: "Langue",
+    difficulty: 2,
+    hardWords: [
+      { word: "silice", definition: "Minéral très répandu, composant principal du sable et du quartz." }
+    ]
+  },
+  {
+    id: 34,
+    dayOfYear: 304,
+    title: "La tortue qui respire… par les fesses",
+    text: "Certaines tortues peuvent absorber l’oxygène par leur cloaque.",
+    moreInfo: "Ce phénomène, appelé respiration cloacale, permet à certaines espèces de survivre sous l’eau pendant l’hiver. Elles absorbent l’oxygène dissous dans l’eau grâce à des tissus spécialisés situés dans leur cloaque.",
+    category: "Nature",
+    difficulty: 2,
+    hardWords: [
+      { word: "cloaque", definition: "Orifice unique servant à l’excrétion et à la reproduction chez certains animaux." }
+    ]
+  },
+  {
+    id: 35,
+    dayOfYear: null,
+    title: "Le son le plus silencieux jamais enregistré",
+    text: "Des chercheurs ont mesuré un son à -20 décibels, plus silencieux que le vide.",
+    moreInfo: "Ce record a été obtenu dans une chambre anéchoïque, une pièce conçue pour absorber toutes les ondes sonores. Le silence y est si profond que certaines personnes entendent leur propre circulation sanguine. La pièce est utilisée pour tester des appareils audio.",
+    category: "Technologie",
+    difficulty: 3,
+    hardWords: [
+      { word: "anéchoïque", definition: "Qui n’émet ni ne réfléchit d’écho, grâce à une isolation acoustique extrême." }
+    ]
+  }
+];
 ];
