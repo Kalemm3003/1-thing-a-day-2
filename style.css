@@ -28,9 +28,9 @@ header { padding: 20px; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur
 .more-btn { margin-top: 30px; background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 15px; cursor: pointer; }
 .nav-bar { height: 85px; background: rgba(15, 23, 42, 0.8); display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
 
-/* --- NAVIGATION NETTE --- */
+/* Navigation Nette */
 .nav-item { font-size: 0.7rem; opacity: 0.2; background: none; border: none; color: var(--text); cursor: pointer; }
-.nav-item.active { opacity: 1; color: var(--accent); } /* Daily redevient bleu/lumineux quand actif */
+.nav-item.active { opacity: 1; color: var(--accent); }
 .nav-item span { font-size: 1.5rem; display: block; }
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -45,8 +45,8 @@ header { padding: 20px; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur
 .history-item:active { transform: scale(0.98); }
 .stats-card { background: rgba(30, 41, 59, 0.6); border-radius: 24px; padding: 24px; text-align: center; margin-bottom: 16px; }
 .stats-number { font-size: 48px; font-weight: 800; color: var(--accent); }
-.progress-bar-bg { background: #1e293b; border-radius: 10px; height: 8px; width: 100%; margin-top: 15px; }
-.progress-bar-fill { background: var(--accent); height: 100%; border-radius: 10px; }
+.progress-bar-bg { background: #1e293b; border-radius: 10px; height: 8px; width: 100%; margin-top: 15px; overflow: hidden; }
+.progress-bar-fill { background: var(--accent); height: 100%; border-radius: 10px; transition: width 0.3s ease; }
 .close-btn { position: fixed; top: 30px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 50%; z-index: 201; cursor: pointer; font-size: 20px; }
 .info-popup, .definition-popup {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6);

@@ -120,8 +120,7 @@ function setupGestures() {
 }
 
 function showHistory() {
-    currentView = 'history'; 
-    updateActiveMenu();
+    currentView = 'history'; updateActiveMenu();
     const list = FACTS.filter(f => learnedFacts.includes(f.id));
     document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait appris</div>' :
         list.slice().reverse().map(f => `<div class="history-item" onclick="window.showFactDetail(${f.id})"><h3>${f.title}</h3><p>${f.text.substring(0, 70)}...</p><small>📂 ${f.category}</small></div>`).join('');
@@ -130,24 +129,36 @@ function showHistory() {
 }
 
 function showStats() {
-    currentView = 'stats'; 
-    updateActiveMenu();
+    currentView = 'stats'; updateActiveMenu();
     const validLearnedIDs = learnedFacts.filter(id => FACTS.some(f => f.id === id));
     const count = validLearnedIDs.length;
     const total = FACTS.length;
     const progress = Math.min(Math.round((count / total) * 100), 100);
     const uniqueCategories = new Set(FACTS.filter(f => validLearnedIDs.includes(f.id)).map(f => f.category));
-    document.getElementById('statsContainer').innerHTML = `<div class="stats-card"><div class="stats-number">${count}</div><div style="color:#94a3b8">faits appris</div><div class="progress-bar-bg" style="overflow:hidden"><div class="progress-bar-fill" style="width:${progress}%; max-width:100%"></div></div></div><div class="stats-card"><div class="stats-number">${uniqueCategories.size}</div><div style="color:#94a3b8">catégories explorées</div></div><div class="stats-card"><div class="stats-number">${total}</div><div style="color:#94a3b8">faits disponibles</div></div>`;
+    
+    document.getElementById('statsContainer').innerHTML = `
+        <div class="stats-card">
+            <div class="stats-number">${count}</div>
+            <div style="color:#94a3b8">faits appris</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width:${progress}%"></div>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${uniqueCategories.size}</div>
+            <div style="color:#94a3b8">catégories explorées</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${total}</div>
+            <div style="color:#94a3b8">faits disponibles</div>
+        </div>`;
     document.getElementById('statsView').classList.add('open');
     enableSwipeBack();
 }
 
 function updateActiveMenu() {
     document.querySelectorAll('.nav-item').forEach((item, i) => {
-        // Logique de classe active nette : si on est sur Historique, Daily perd sa classe active
-        const isActive = (i === 0 && currentView === 'daily') || 
-                       (i === 1 && currentView === 'history') || 
-                       (i === 2 && currentView === 'stats');
+        const isActive = (i === 0 && currentView === 'daily') || (i === 1 && currentView === 'history') || (i === 2 && currentView === 'stats');
         item.classList.toggle('active', isActive);
     });
 }
@@ -162,26 +173,13 @@ function enableSwipeBack() { document.addEventListener('touchstart', onGlobalTou
 function disableSwipeBack() { document.removeEventListener('touchstart', onGlobalTouchStart); document.removeEventListener('touchend', onGlobalTouchEnd); }
 
 window.showFactDetail = (id) => { const fact = FACTS.find(f => f.id === id); if (fact) showPopup(fact.title, fact.moreInfo || fact.text); };
-
-window.closeHistory = () => { 
-    document.getElementById('historyView').classList.remove('open'); 
-    currentView = 'daily'; 
-    updateActiveMenu(); 
-    disableSwipeBack(); 
-};
-window.closeStats = () => { 
-    document.getElementById('statsView').classList.remove('open'); 
-    currentView = 'daily'; 
-    updateActiveMenu(); 
-    disableSwipeBack(); 
-};
+window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
+window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 
 document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(); window.closeStats(); };
 document.querySelectorAll('.nav-item')[1].onclick = showHistory;
 document.querySelectorAll('.nav-item')[2].onclick = showStats;
 
-// Initialisation
-updateActiveMenu();
 renderFact(FACTS[0]);
 setupGestures();
 updateStreak();
