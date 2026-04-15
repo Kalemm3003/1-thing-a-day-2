@@ -139,7 +139,7 @@ export const FACTS = [
     dayOfYear: 112,
     title: "Briquet vs Allumettes",
     text: "Le premier briquet a été commercialisé trois ans avant l'allumette à friction.",
-    moreInfo: "Le briquet de Döbereiner est apparu en 1823, utilisant une réaction entre l'hydrogène et le platine. L'allumette à friction, bien que paraissant plus rudimentaire, n'a été stabilisée qu'en 1826 par John Walker.",
+    moreInfo: "Le briquet de Döbereiner est apparu en 1823, utilisant une entre l'hydrogène et le platine. L'allumette à friction, bien que paraissant plus rudimentaire, n'a été stabilisée qu'en 1826 par John Walker.",
     category: "Histoire",
     difficulty: 2,
     hardWords: [
@@ -336,7 +336,7 @@ export const FACTS = [
   {
     id: 34,
     dayOfYear: 304,
-    title: "La tortue qui respire… par les fesses",
+    title: "La tortue qui respire par les fesses",
     text: "Certaines tortues peuvent absorber l’oxygène par leur cloaque.",
     moreInfo: "Ce phénomène, appelé respiration cloacale, permet à certaines espèces de survivre sous l’eau pendant l’hiver. Elles absorbent l’oxygène dissous dans l’eau grâce à des tissus spécialisés situés dans leur cloaque.",
     category: "Nature",
