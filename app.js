@@ -157,7 +157,6 @@ function disableSwipeBack() { document.removeEventListener('touchstart', onGloba
 
 window.showFactDetail = (id) => { const fact = FACTS.find(f => f.id === id); if (fact) showPopup(fact.title, fact.moreInfo || fact.text); };
 
-// ICI : on force le retour à 'daily' et on met à jour le menu
 window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
 
