@@ -72,7 +72,9 @@ function showDefinition(definition) {
 
 function updateStreak() {
     let streakElem = document.getElementById('streak');
-    if (streakElem) streakElem.innerHTML = `🔥 ${learnedFacts.length} appris`;
+    // On ne compte que les faits appris qui existent encore dans la base
+    const validLearnedCount = learnedFacts.filter(id => FACTS.some(f => f.id === id)).length;
+    if (streakElem) streakElem.innerHTML = `🔥 ${validLearnedCount} appris`;
 }
 
 function renderFact(fact) {
@@ -129,9 +131,30 @@ function showHistory() {
 
 function showStats() {
     currentView = 'stats'; updateActiveMenu();
-    const progress = Math.round((learnedFacts.length / FACTS.length) * 100);
-    const uniqueCategories = new Set(FACTS.filter(f => learnedFacts.includes(f.id)).map(f => f.category));
-    document.getElementById('statsContainer').innerHTML = `<div class="stats-card"><div class="stats-number">${learnedFacts.length}</div><div style="color:#94a3b8">faits appris</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progress}%"></div></div></div><div class="stats-card"><div class="stats-number">${uniqueCategories.size}</div><div style="color:#94a3b8">catégories explorées</div></div><div class="stats-card"><div class="stats-number">${FACTS.length}</div><div style="color:#94a3b8">faits disponibles</div></div>`;
+    // On nettoie les stats pour ne compter que ce qui existe dans data.js
+    const validLearnedIDs = learnedFacts.filter(id => FACTS.some(f => f.id === id));
+    const count = validLearnedIDs.length;
+    const total = FACTS.length;
+    const progress = Math.min(Math.round((count / total) * 100), 100);
+    
+    const uniqueCategories = new Set(FACTS.filter(f => validLearnedIDs.includes(f.id)).map(f => f.category));
+    
+    document.getElementById('statsContainer').innerHTML = `
+        <div class="stats-card">
+            <div class="stats-number">${count}</div>
+            <div style="color:#94a3b8">faits appris</div>
+            <div class="progress-bar-bg" style="overflow:hidden">
+                <div class="progress-bar-fill" style="width:${progress}%; max-width:100%"></div>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${uniqueCategories.size}</div>
+            <div style="color:#94a3b8">catégories explorées</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">${total}</div>
+            <div style="color:#94a3b8">faits disponibles</div>
+        </div>`;
     document.getElementById('statsView').classList.add('open');
     enableSwipeBack();
 }
