@@ -28,9 +28,9 @@ header { padding: 20px; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur
 .more-btn { margin-top: 30px; background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 15px; cursor: pointer; }
 .nav-bar { height: 85px; background: rgba(15, 23, 42, 0.8); display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
 
-/* Inactif plus discret (0.3) pour faire ressortir l'actif (1.0) */
-.nav-item { font-size: 0.7rem; opacity: 0.3; background: none; border: none; color: var(--text); cursor: pointer; transition: opacity 0.2s; }
-.nav-item.active { opacity: 1; color: var(--accent); }
+/* --- NAVIGATION NETTE --- */
+.nav-item { font-size: 0.7rem; opacity: 0.2; background: none; border: none; color: var(--text); cursor: pointer; }
+.nav-item.active { opacity: 1; color: var(--accent); } /* Daily redevient bleu/lumineux quand actif */
 .nav-item span { font-size: 1.5rem; display: block; }
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }

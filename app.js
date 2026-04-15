@@ -120,7 +120,8 @@ function setupGestures() {
 }
 
 function showHistory() {
-    currentView = 'history'; updateActiveMenu();
+    currentView = 'history'; 
+    updateActiveMenu();
     const list = FACTS.filter(f => learnedFacts.includes(f.id));
     document.getElementById('historyList').innerHTML = list.length === 0 ? '<div class="empty-state">📭 Aucun fait appris</div>' :
         list.slice().reverse().map(f => `<div class="history-item" onclick="window.showFactDetail(${f.id})"><h3>${f.title}</h3><p>${f.text.substring(0, 70)}...</p><small>📂 ${f.category}</small></div>`).join('');
@@ -129,7 +130,8 @@ function showHistory() {
 }
 
 function showStats() {
-    currentView = 'stats'; updateActiveMenu();
+    currentView = 'stats'; 
+    updateActiveMenu();
     const validLearnedIDs = learnedFacts.filter(id => FACTS.some(f => f.id === id));
     const count = validLearnedIDs.length;
     const total = FACTS.length;
@@ -142,7 +144,11 @@ function showStats() {
 
 function updateActiveMenu() {
     document.querySelectorAll('.nav-item').forEach((item, i) => {
-        item.classList.toggle('active', (i === 0 && currentView === 'daily') || (i === 1 && currentView === 'history') || (i === 2 && currentView === 'stats'));
+        // Logique de classe active nette : si on est sur Historique, Daily perd sa classe active
+        const isActive = (i === 0 && currentView === 'daily') || 
+                       (i === 1 && currentView === 'history') || 
+                       (i === 2 && currentView === 'stats');
+        item.classList.toggle('active', isActive);
     });
 }
 
@@ -157,13 +163,25 @@ function disableSwipeBack() { document.removeEventListener('touchstart', onGloba
 
 window.showFactDetail = (id) => { const fact = FACTS.find(f => f.id === id); if (fact) showPopup(fact.title, fact.moreInfo || fact.text); };
 
-window.closeHistory = () => { document.getElementById('historyView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
-window.closeStats = () => { document.getElementById('statsView').classList.remove('open'); currentView = 'daily'; updateActiveMenu(); disableSwipeBack(); };
+window.closeHistory = () => { 
+    document.getElementById('historyView').classList.remove('open'); 
+    currentView = 'daily'; 
+    updateActiveMenu(); 
+    disableSwipeBack(); 
+};
+window.closeStats = () => { 
+    document.getElementById('statsView').classList.remove('open'); 
+    currentView = 'daily'; 
+    updateActiveMenu(); 
+    disableSwipeBack(); 
+};
 
 document.querySelectorAll('.nav-item')[0].onclick = () => { window.closeHistory(); window.closeStats(); };
 document.querySelectorAll('.nav-item')[1].onclick = showHistory;
 document.querySelectorAll('.nav-item')[2].onclick = showStats;
 
+// Initialisation
+updateActiveMenu();
 renderFact(FACTS[0]);
 setupGestures();
 updateStreak();
